@@ -1,15 +1,10 @@
 # DirHash
 DirHash is a command line tool to take a directory and return the file hashes.
 
-## Usage
-Download DirFetch through the following command, and once DirHash is downloaded, move to the target directory using:
-```
-git clone https://github.com/melatonein5/DirHash.git
-cd DirHash
-```
+## Installation
+At the time of writing, an installer is only available for amd64 Linux. Download the installer from the [releases page](https://github.com/melatonein5/DirHash/releases/tag/latest), and run `sudo ./dirhash_amd64_linux_installer'`.
 
-### Installation
-At the time of writing, an installer is only available for amd64 Linux. Download the installer from the releases page, and run `sudo ./dirhash_amd64_linux_installer'`.
+Alternatively, you can download the binary and use DirHash the following way:
 
 #### Running through the pre-compiled binary
 At the time of writing, the binary is compiled for linux systems. Run DirHash file the following `./dirhash`.
@@ -28,6 +23,13 @@ Examples:
   ./dirhash --input-dir /path/to/dir --output output.txt --algorithm sha512 sha1
   ./dirhash -t
   ./dirhash --help
+```
+
+## Usage
+Download DirFetch through the following command, and once DirHash is downloaded, move to the target directory using:
+```
+git clone https://github.com/melatonein5/DirHash.git
+cd DirHash
 ```
 
 #### Running through Go Runtime Environment (requires Go installation)
