@@ -12,7 +12,7 @@ func ParseArgs(rawArgs []string) (Args, error) {
 	//Default values
 	args.StrInputDir = "."
 	args.StrOutputFile = ""
-	args.StrHashAlgorithms = []string{"md5"}
+	args.StrHashAlgorithms = []string{}
 	args.HashAlgorithmId = []int{}
 	args.OutputToTerminal = false
 	args.WriteToFile = true
