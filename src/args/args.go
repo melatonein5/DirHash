@@ -8,8 +8,8 @@ type Args struct {
 	OutputToTerminal bool
 	WriteToFile      bool
 	//HashAlgorithm
-	StrHashAlgorithm string
-	HashAlgorithmId  int
+	StrHashAlgorithms []string
+	HashAlgorithmId   []int
 	//Flags
 	Help bool
 }

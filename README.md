@@ -15,12 +15,14 @@ Usage: ./dirhash [options]
 Options:
   -i, --input-dir <dir>    Specify the input directory (default: current directory)
   -o, --output <file>      Specify the output file (default: no output file)
-  -a, --algorithm <alg>    Specify the hash algorithm (default: md5)
+  -a, --algorithm <alg>    Specify the hash algorithm (default: md5), can take more than 1 argument, separated by spaces
   -t, --terminal           Output to terminal (default: false)
   -h, --help               Show this help message and exit
+Supported algorithms:
+  md5, sha1, sha256, sha512
 Examples:
   ./dirhash -i /path/to/dir -o output.txt -a sha256
-  ./dirhash --input-dir /path/to/dir --output output.txt --algorithm sha512
+  ./dirhash --input-dir /path/to/dir --output output.txt --algorithm sha512 sha1
   ./dirhash -t
   ./dirhash --help
 ```
@@ -32,12 +34,14 @@ Usage: go run dirhash.go [options]
 Options:
   -i, --input-dir <dir>    Specify the input directory (default: current directory)
   -o, --output <file>      Specify the output file (default: no output file)
-  -a, --algorithm <alg>    Specify the hash algorithm (default: md5)
+  -a, --algorithm <alg>    Specify the hash algorithms (default: md5), can take more than 1 argument, separated by spaces
   -t, --terminal           Output to terminal (default: false)
   -h, --help               Show this help message and exit
+Supported algorithms:
+  md5, sha1, sha256, sha512
 Examples:
   go run dirhash.go -i /path/to/dir -o output.txt -a sha256
-  go run dirhash.go --input-dir /path/to/dir --output output.txt --algorithm sha512
+  go run dirhash.go --input-dir /path/to/dir --output output.txt --algorithm sha512 sha1
   go run dirhash.go -t
   go run dirhash.go --help
 ```
@@ -50,53 +54,39 @@ There are two output types: terminal output; file output. Terminal output will s
 
 ##### Terminal Output
 ```
-[user@hostname DirHash]$ ./dirhash -a sha256
+[jmn@two DirHash]$ go run dirhash.go -a sha1 sha256
 File Name                              Path                                                   Hash                                                             Hash Type
-COMMIT_EDITMSG                         .git/COMMIT_EDITMSG                                    afd339433d4bff8951cd2a1a76a352adfe3bc10262399db714cbe7f0ad9eceda sha256
-HEAD                                   .git/HEAD                                              1b7836f56b07eaf921c56690ef133f46ad12a3ba2cb8be9ad1cf78bb31b96995 sha256
-config                                 .git/config                                            5a832d499fd863978c8ec0c3566c5fab6fe9cd7189716afa3ddb9fe7e8d3965a sha256
-description                            .git/description                                       748b2e543998a28a987e49f4dc4c99b2d8f70baa04e5da2909774418edca006a sha256
-applypatch-msg.sample                  .git/hooks/applypatch-msg.sample                       bcb415ff5667e3b90521aac0b09e0aae5c876ecc8c2656b4a5cd217e5e383514 sha256
-commit-msg.sample                      .git/hooks/commit-msg.sample                           35bb03bd769683ee2bad41b3b0b942c66e978d8bcc396dd020e250c2f33c8840 sha256
-fsmonitor-watchman.sample              .git/hooks/fsmonitor-watchman.sample                   ca9e1aac94856f82a999a65dea1b7af506a6874487e74f9226b97fab93114698 sha256
-post-update.sample                     .git/hooks/post-update.sample                          062407a49e88043056ff9b23237724fdbcb4af19ccb00b5b51184b4f35ecaa8d sha256
-pre-applypatch.sample                  .git/hooks/pre-applypatch.sample                       08370a3e972eba65db40247a9704dd087038c54d7794f2bf2da1bc82dc4a51a1 sha256
-pre-commit.sample                      .git/hooks/pre-commit.sample                           599c01284f977cc7a5e636754ed4aceb453dcfe06cc6a5a38a1268477dffe3d6 sha256
-pre-merge-commit.sample                .git/hooks/pre-merge-commit.sample                     673abbd893804293dbdc33ecfed7b481fa4ced391ce07379d356fd5d1fcb4ec5 sha256
-pre-push.sample                        .git/hooks/pre-push.sample                             b4fd18fe70b172dea1da615163cf49d658172a10bd4d170ee45a554e0bd4959d sha256
-pre-rebase.sample                      .git/hooks/pre-rebase.sample                           2e5ccdb3e2bad04fc5d3544e4f01ad66538008bd86363bfa4996e68a7cad4288 sha256
-pre-receive.sample                     .git/hooks/pre-receive.sample                          8801d293b2b3097c7a0f7650e3f45032bda3d62823ff6a45c0b6fdcb1b75719e sha256
-prepare-commit-msg.sample              .git/hooks/prepare-commit-msg.sample                   05fc76ead5fa143959bf964819653479d281b6cffa973a8e55fe6a778010e92f sha256
-push-to-checkout.sample                .git/hooks/push-to-checkout.sample                     a47e51d0557ba2e578f3606c40435c454daa267c3c74fd7ed7961ed213792e54 sha256
-sendemail-validate.sample              .git/hooks/sendemail-validate.sample                   c7b827489ac890b81be60d5617798ccee3f7a3985c1129d61079fd3f019f4483 sha256
-update.sample                          .git/hooks/update.sample                               2a8de8c9029a70eb1dfe718c5b31c07f2ed67607cd1b5976ae1173d86582e737 sha256
-index                                  .git/index                                             b070d3a25970798c78c4f7f5a5d8cf8f3bbd14f2a5b2e842fc5f577077b84662 sha256
-exclude                                .git/info/exclude                                      12578d4f105793e63e8bc3853d6fdb8d51a229d0bdf923bb31690d6f3418237e sha256
-HEAD                                   .git/logs/HEAD                                         ea889ef0d5f883be36f1d86593590b3c830c01c3a0eb70342e8f8acf8376bf30 sha256
-main                                   .git/logs/refs/heads/main                              bdaf0a82b44bcd5c021d940eb8d18e4888bdef1e6f800fd7256c9f14699a16e2 sha256
-main                                   .git/logs/refs/remotes/origin/main                     c212f430d8f6280c6c9f7607b481e5d3d7eb67426be0bd37e94d788d2ba21cdd sha256
-ffd99de246994a595d09f719540338bc102824 .git/objects/2f/ffd99de246994a595d09f719540338bc102824 2592c5f4041feb3777424f7b0679f1fcd9f8074190aa5cedf5caaf9a54de1041 sha256
-7f0061b697c20dc65f0abe1be1b1881d222c75 .git/objects/79/7f0061b697c20dc65f0abe1be1b1881d222c75 a6c381efe806c8e1f2a68fb2a8000fe10f824cdddf8a050234e46ade28653497 sha256
-3b39e44f6d27e2f6367953794fc03abb1b89cb .git/objects/bb/3b39e44f6d27e2f6367953794fc03abb1b89cb 181e22cd1be039ab1d4ab3d7c5d469a17edcce7dce6be1de65237086441919b5 sha256
-main                                   .git/refs/heads/main                                   bdea49441fc325c6bba80808e53aa6eefb4a01ddf97e99d5740e7409ccd51caf sha256
-main                                   .git/refs/remotes/origin/main                          21bc691a086d8f34bda5891be3fbb67148bc6a91dbc61fa242c0b1f144fdcc9f sha256
-README.md                              README.md                                              80bc0fb1a1c82259f114460ba77e427b5b3d5fcef32194ab465f3c33078a3de7 sha256
-dirhash                                dirhash                                                ab08f8ca89eef473e1480ebbea862305cc10ac92ec8fe37b890d5f1b45da65bc sha256
-dirhash.go                             dirhash.go                                             a45aaaf2440ee1b07e82650d2a9c7c6317ce2c7206331f643604043cc441e1e6 sha256
-go.mod                                 go.mod                                                 bbbce2e1376e58c1fe3f111f2167f551229625db83fbf40abe6d03f2d8657b90 sha256
-args.go                                src/args/args.go                                       66d458a380d9471c2f096ee265a8dac3cc55c06b193daa922f3cbccc63b8d570 sha256
-hash_algorithm.go                      src/args/hash_algorithm.go                             f7b5755e3a7f6f9e4de2f4405853420e4aabffba4158df7623907a183d477d82 sha256
-parse_args.go                          src/args/parse_args.go                                 d4c99f7cba39c251430b3983c85faf2b26d908b78e53faa12b28b458b115fb04 sha256
-help.go                                src/cmdline/help.go                                    95cc5040d7f297c061c0482e5e25e2e241f9a4e2a036b14229e40772c3ec22f0 sha256
-output_files.go                        src/cmdline/output_files.go                            a19e0735bcf3175290476c7a48be3a0f55345341d5fe3d76dace46eb0a488a3c sha256
-enumerate_files.go                     src/files/enumerate_files.go                           5660216c3957bf5f2bfeaed4827beaaef35ab80392fc38159931bb31675da312 sha256
-file.go                                src/files/file.go                                      791f770d5ee7b622b668dc720d22dcb1af9a793b57f0a17278c314d59f7c62db sha256
-hash_files.go                          src/files/hash_files.go                                5847d97a7f2c68f27555aad5c05bfd12a7bfe3963d86785edd4223434284a7b6 sha256
-md5_files.go                           src/files/md5_files.go                                 18a1bef74d7ac79e32a0ef111e7d615f2311fbefe2d3f96eb6852a6f3a7446be sha256
-sha1_files.go                          src/files/sha1_files.go                                20fa18cb29b5009cd992114aea2866a80d3b5fdd4de5826497a63270dd5dadff sha256
-sha256_files.go                        src/files/sha256_files.go                              9786814c4d3bb437956591d0a20914a69f4cfbde8233bb4d5ab51078685cbeee sha256
-sha512_files.go                        src/files/sha512_files.go                              4dfea9664efd8f59d22421d21d712c4a916cf294a638d32b06f7d8d9cfbaa3f0 sha256
-write_output.go                        src/files/write_output.go                              0eac73e2af1c90940d91b70c369fc9a183e4dba263e06b0f498db91f9d2b40f2 sha256
+COMMIT_EDITMSG                         .git/COMMIT_EDITMSG                                    ac1f40bb9f2231060330d9c7a4ec9ab2355e300f                         sha1
+FETCH_HEAD                             .git/FETCH_HEAD                                        5d037ee061137d7c6088c8a8b1f08b88d4899843                         sha1
+HEAD                                   .git/HEAD                                              2aa05cb189709905d22504077e79b9d7ed74722a                         sha1
+ORIG_HEAD                              .git/ORIG_HEAD                                         039435964f90dfd504265f1feb58e0eaff896bd2                         sha1
+config                                 .git/config                                            5312c39011db3903bc8595f37f9ede2b761ec7b0                         sha1
+description                            .git/description                                       9eca422d6263200fdf78796cab2765eb3fdc37e5                         sha1
+applypatch-msg.sample                  .git/hooks/applypatch-msg.sample                       285716cd0b1f4e75e00d9854480fce108d1b6654                         sha1
+commit-msg.sample                      .git/hooks/commit-msg.sample                           aa71dc4a856cae39c4da91d26e4cb1c7f0a8a92f                         sha1
+fsmonitor-watchman.sample              .git/hooks/fsmonitor-watchman.sample                   c55bcc85dbbd3785080ff7d236a0102c47dfc5ba                         sha1
+post-update.sample                     .git/hooks/post-update.sample                          f2ea063306cc8441634367a514d8fef76da8f45e                         sha1
+main                                   .git/refs/heads/main                                   5d342e4e576ac445f7afc2e6c49a3e1986557019a5b1cb4acab447e5f3dbb73d sha256
+HEAD                                   .git/refs/remotes/origin/HEAD                          6832d31adc6cd2a5714637a4395ad820983e5482535931d603d0261cae88b837 sha256
+main                                   .git/refs/remotes/origin/main                          1378d3f729fbd8f5ec3d570cc94343c069ce13d0cbfb4d237e50f3f550980a68 sha256
+LICENSE                                LICENSE                                                51b84b197025b72457944418eac94b71233e080bd0c45245198c7acad0e26aa9 sha256
+README.md                              README.md                                              92f61da76c367c58263ace4d954095f6c86239d5ed0efb633ba203f082a689ae sha256
+dirhash                                dirhash                                                eb567f761ed92ddb6a990498352bae2e8e878b99e638cc756e3a5ef5a7670a38 sha256
+dirhash.go                             dirhash.go                                             8f2096ddeff9543ab56325dd63e9d689e61cd4b48ce074ea663c5a48cf58f5cd sha256
+go.mod                                 go.mod                                                 40719d6dbfafc34704d3efd7c4bcea644755b48be7b1589e38cf86a4c7ffdf3b sha256
+args.go                                src/args/args.go                                       86da89f3d83ed7fe84a62c946c72401df10274d73c5543a0590cfa0569b1c38e sha256
+hash_algorithm.go                      src/args/hash_algorithm.go                             64b723c3cc795a25397cd529cc9148e8b53bc5de83d4750a31fedafe7e9a2d05 sha256
+parse_args.go                          src/args/parse_args.go                                 92f5a1bd99e8659cdca3689958861018425611d72691471a050b88385da22281 sha256
+help.go                                src/cmdline/help.go                                    b17700c422f02e6de8b2f7f6bac4208600efba96c48e444af7e38c440c6ece10 sha256
+output_files.go                        src/cmdline/output_files.go                            e0fc4f16df0961806b235c17bb363f33ab985be7b5e37a48075e95d56dc0186a sha256
+enumerate_files.go                     src/files/enumerate_files.go                           c121e905cb787652d97423af50e5f68b67fd62b5d0ea93315a0ca79334830e58 sha256
+file.go                                src/files/file.go                                      b60cff7dcd0a219b435ef39e5905796885f51ed3bc0febc0e41befab336374aa sha256
+hash_files.go                          src/files/hash_files.go                                30f098d18815d96bc3a10b114486cebcab0e8725e98681d22baced6a508ff752 sha256
+md5_files.go                           src/files/md5_files.go                                 43f7e1c3b48076af3ffc6ca10572528e697db175cdf24e1533bf73ba0a1241b0 sha256
+sha1_files.go                          src/files/sha1_files.go                                8c54814b5b021ae6085ae91f7bf2c923dd8fe9ff590ee13946f7086c14d5f87c sha256
+sha256_files.go                        src/files/sha256_files.go                              2e14eea5233669ffa6c32e8d91e5ce1baaef6aa4cac48bda82607264c77bbf07 sha256
+sha512_files.go                        src/files/sha512_files.go                              bb427b881944e600d521532200fb5106b240f940b1d899067ff30832ab667abb sha256
+write_output.go                        src/files/write_output.go                              976f2684e4b610428bce50ece072c76351f4cf476f237825ebb8f01b02310a26 sha256
 ```
 
 #### CSV Output

@@ -12,8 +12,8 @@ func ParseArgs(rawArgs []string) (Args, error) {
 	//Default values
 	args.StrInputDir = "."
 	args.StrOutputFile = ""
-	args.StrHashAlgorithm = "md5"
-	args.HashAlgorithmId = 0
+	args.StrHashAlgorithms = []string{"md5"}
+	args.HashAlgorithmId = []int{}
 	args.OutputToTerminal = false
 	args.WriteToFile = true
 	args.Help = false
@@ -46,16 +46,20 @@ func ParseArgs(rawArgs []string) (Args, error) {
 				i += 2
 			case "-a", "--algorithm":
 				//Hash algorithm
-				nextArg := i + 1
-				if nextArg >= rawArgsLen {
-					return args, errors.New("missing value for -a | --algorithm flag")
+				//There can be multiple algorithms specified, so we need to loop until we hit a flag or run out of arguments
+				for j := i + 1; j < rawArgsLen && rawArgs[j][0] != '-'; j++ {
+					args.StrHashAlgorithms = append(args.StrHashAlgorithms, rawArgs[j])
+					// Convert the string hash algorithm to an int and append it to the HashAlgorithmId slice
+					id := StrHashAlgorithmToId(rawArgs[j])
+					if id == -1 {
+						return args, errors.New("invalid hash algorithm: " + rawArgs[j])
+					}
+					args.HashAlgorithmId = append(args.HashAlgorithmId, id)
+					// Move to the next argument
+					i = j
 				}
-				args.StrHashAlgorithm = rawArgs[nextArg]
-				args.HashAlgorithmId = StrHashAlgorithmToId(args.StrHashAlgorithm)
-				if err := HashAlgorithmValidation(args.HashAlgorithmId); err != nil {
-					return args, err
-				}
-				i += 2 // Skip the next argument since it's the value for the flag
+				// Move to the next argument
+				i++
 			case "-t", "--terminal":
 				//Output to terminal
 				args.OutputToTerminal = true
@@ -78,6 +82,12 @@ func ParseArgs(rawArgs []string) (Args, error) {
 	if args.StrOutputFile == "" {
 		args.OutputToTerminal = true
 		args.WriteToFile = false
+	}
+
+	//If no hash algorithms were specified, default to md5
+	if len(args.StrHashAlgorithms) == 0 {
+		args.StrHashAlgorithms = []string{"md5"}
+		args.HashAlgorithmId = []int{0} // MD5
 	}
 
 	return args, nil
