@@ -140,7 +140,6 @@ src/files/write_output.go,3eb5bb989a47bfc677027578be94f8d3190014c182839aa5eb7cb0
 ```
 
 ## Roadmap
-The three main improvements to make are: 
-1. Running multiple hash functions in a single command.
+The main improvements to make are: 
 1. Add installation scripts to allow system-wide access at the terminal.
 1. Support for more hashing functions.
