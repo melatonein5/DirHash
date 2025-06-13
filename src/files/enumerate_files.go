@@ -1,6 +1,7 @@
 package files
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -12,7 +13,9 @@ func EnumerateFiles(dir string) ([]File, error) {
 	//Traverse the directory recursively
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return err
+			log.Println("Error accessing path:", path, "Error:", err)
+			// Skip this file or directory
+			return nil
 		}
 
 		//Check if the path is a file (not a directory)

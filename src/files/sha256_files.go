@@ -3,6 +3,7 @@ package files
 import (
 	"crypto/sha256"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -15,7 +16,9 @@ func SHA256Files(files []File) ([]File, error) {
 		// Read the file as bytes to hash it
 		data, err := os.ReadFile(file.Path)
 		if err != nil {
-			return nil, err
+			// Print the error to the user and continue
+			log.Println("Error reading file:", file.Path, "-", err)
+			continue // Skip this file and continue with the next one
 		}
 		// Write the data to the hasher
 		hasher.Write(data)
