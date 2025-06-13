@@ -13,7 +13,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel.
 jobs:
-  # The "build" job
+  # LINUX AMD64 BUILD
   build:
     # The type of runner that the job will run on.
     # 'ubuntu-latest' is a good choice for targeting most Linux systems.
@@ -42,11 +42,11 @@ jobs:
       # The 'embed' directive in the installer needs the file to be present
       # before the installer is built.
       - name: Copy dirhash binary to installer directory
-        run: cp dirhash ./installer/
+        run: cp dirhash ./installer/linux/
 
       # Step 5: Build the final installer application.
       - name: Build installer application
-        run: go build -o installer ./installer/installer.go
+        run: go build -o dirhash_amd64_linux_installer ./installer/linux/installer.go
 
       # Step 6 (Recommended): Upload the installer binary as an artifact.
       # This allows you to download the compiled installer from the
@@ -54,5 +54,5 @@ jobs:
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: installer-linux-amd64 # The name of the downloadable artifact
-          path: installer             # The path to the file to upload
+          name: installer/linux # The name of the downloadable artifact
+          path: dirhash_amd64_linux_installer # The path to the file to upload
