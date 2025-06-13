@@ -1,0 +1,58 @@
+# .github/workflows/build.yml
+
+# Name of the workflow, which will be displayed on the GitHub Actions tab.
+name: Build Go Installer
+
+# Controls when the workflow will run.
+# This example triggers the workflow on pushes to the 'main' branch
+# and also allows you to run it manually from the Actions tab.
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel.
+jobs:
+  # The "build" job
+  build:
+    # The type of runner that the job will run on.
+    # 'ubuntu-latest' is a good choice for targeting most Linux systems.
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out your repository's code under $GITHUB_WORKSPACE,
+      # so your job can access it.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up the Go environment.
+      # You can specify the Go version you need.
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4' # Or whatever version you are using
+
+      # Step 3: Build the 'dirhash' utility.
+      # This command runs inside the root of your repository.
+      - name: Build dirhash utility
+        run: go build -o dirhash ./dirhash.go
+        # Note: The output binary 'dirhash_binary' is created in the root.
+
+      # Step 4: Copy the 'dirhash' binary into the installer directory.
+      # The 'embed' directive in the installer needs the file to be present
+      # before the installer is built.
+      - name: Copy dirhash binary to installer directory
+        run: cp dirhash ./installer/
+
+      # Step 5: Build the final installer application.
+      - name: Build installer application
+        run: go build -o installer ./installer/installer.go
+
+      # Step 6 (Recommended): Upload the installer binary as an artifact.
+      # This allows you to download the compiled installer from the
+      # GitHub Actions run summary page.
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-linux-amd64 # The name of the downloadable artifact
+          path: installer             # The path to the file to upload
