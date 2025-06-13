@@ -54,5 +54,5 @@ jobs:
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: installer/linux # The name of the downloadable artifact
+          name: amd64_linux_installer # The name of the downloadable artifact
           path: dirhash_amd64_linux_installer # The path to the file to upload
