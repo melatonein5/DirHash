@@ -38,7 +38,7 @@ jobs:
         env:
           GOOS: windows
           GOARCH: amd64
-        run: go build -v -o dirhash.exe ./dirhash/dirhash.go
+        run: go build -v -o dirhash.exe ./dirhash.go
 
       # Copy the dirhash.exe binary into the Windows installer directory
       - name: Copy dirhash binary to Windows installer directory
