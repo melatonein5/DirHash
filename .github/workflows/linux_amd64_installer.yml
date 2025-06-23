@@ -1,7 +1,7 @@
 # .github/workflows/build.yml
 
 # Name of the workflow, which will be displayed on the GitHub Actions tab.
-name: Build Go Installer
+name: Build Linux AMD64 Installer
 
 # Controls when the workflow will run.
 # This example triggers the workflow on pushes to the 'main' branch
