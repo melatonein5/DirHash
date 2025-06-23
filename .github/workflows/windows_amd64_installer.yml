@@ -45,12 +45,21 @@ jobs:
         run: cp dirhash.exe ./installer/windows/
 
       # Build the final Windows installer application
-      # Note the .exe extension and the GOOS/GOARCH environment variables
+      # This step now runs within the installer's own module context.
       - name: Build Windows installer application
+        # Set the working directory to where the installer's go.mod is located
+        working-directory: ./installer/windows
         env:
           GOOS: windows
           GOARCH: amd64
-        run: go build -v -o amd64_windows_installer.exe ./installer/windows/installer.go
+        run: |
+          # First, ensure all dependencies for this specific module are downloaded
+          go mod tidy
+          go mod download
+          
+          # Now, build the installer. The output path is relative to the working directory.
+          # We use ../../ to place the final .exe in the repository root.
+          go build -v -o ../../amd64_windows_installer.exe .
 
       # Upload the Windows installer as an artifact
       - name: Upload Windows installer artifact
