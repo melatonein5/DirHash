@@ -26,6 +26,8 @@ func init() {
 
 	if arguments.Help {
 		cmdline.PrintHelp()
+		// Exit the program after printing help
+		os.Exit(0)
 	}
 }
 

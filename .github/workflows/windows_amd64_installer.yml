@@ -65,7 +65,7 @@ jobs:
       - name: Upload Windows installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: amd64_windows_installer
+          name: dirhash_amd64_windows_installer
           path: amd64_windows_installer.exe
         
       # Upload the raw dirhash.exe binary as an artifact
