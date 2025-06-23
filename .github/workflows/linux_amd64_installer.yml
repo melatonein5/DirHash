@@ -54,7 +54,7 @@ jobs:
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: amd64_linux_installer # The name of the downloadable artifact
+          name: dirhash_amd64_linux_installer # The name of the downloadable artifact
           path: dirhash_amd64_linux_installer # The path to the file to upload
 
       # Step 7: Upload Raw dirhash binary as an artifact.
