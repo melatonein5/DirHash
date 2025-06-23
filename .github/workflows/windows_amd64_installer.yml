@@ -1,0 +1,60 @@
+# .github/workflows/build.yml
+
+# Name of the workflow, which will be displayed on the GitHub Actions tab.
+name: Build Go Installer
+
+# Controls when the workflow will run.
+# This example triggers the workflow on pushes to the 'main' branch
+# and also allows you to run it manually from the Actions tab.
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel.
+jobs:
+  # WINDOWS AMD64 BUILD
+  build:
+   # We can still use an ubuntu runner and just cross-compile, which is fast.
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4'
+      
+      # Prepare dependencies for the Windows installer
+      - name: Install Windows dependencies
+        # This makes sure the go.mod for the windows installer is up to date
+        run: cd installer/windows && go mod tidy
+
+      # Build the dirhash utility for Windows
+      # Note the .exe extension and the GOOS/GOARCH environment variables
+      - name: Build dirhash utility for Windows
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: go build -v -o dirhash.exe ./dirhash/dirhash.go
+
+      # Copy the dirhash.exe binary into the Windows installer directory
+      - name: Copy dirhash binary to Windows installer directory
+        run: cp dirhash.exe ./installer/windows/
+
+      # Build the final Windows installer application
+      # Note the .exe extension and the GOOS/GOARCH environment variables
+      - name: Build Windows installer application
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: go build -v -o amd64_windows_installer.exe ./installer/windows/installer.go
+
+      # Upload the Windows installer as an artifact
+      - name: Upload Windows installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amd64_windows_installer
+          path: amd64_windows_installer.exe
