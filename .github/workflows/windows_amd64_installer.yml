@@ -72,5 +72,5 @@ jobs:
       - name: Upload dirhash binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dirhash_amd64_linux_bin # The name of the downloadable artifact
+          name: dirhash_amd64_windows_bin # The name of the downloadable artifact
           path: dirhash.exe       # The path to the file to upload
