@@ -7,7 +7,17 @@ At the time of writing, an installer is only available for amd64 Linux. Download
 Alternatively, you can download the binary and use DirHash the following way:
 
 #### Running through the pre-compiled binary
-At the time of writing, the binary is compiled for linux systems. Run DirHash file the following `./dirhash`.
+At the time of writing, installer and precomiled for AMD64 platforms running Linux and Windows. The following are ways to run DirHash on different systems:
+
+```
+Windows Binary:       dirhash.exe
+Windows Installation: dirhash
+Linux Binary:         ./dirhash
+Linux Installation    dirhash
+```
+
+The following is generic usage using a Linux binary in the current directory:
+
 ```
 Usage: ./dirhash [options]
 Options:
