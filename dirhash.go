@@ -7,6 +7,7 @@ import (
 	"github.com/melatonein5/DirHash/src/args"
 	"github.com/melatonein5/DirHash/src/cmdline"
 	"github.com/melatonein5/DirHash/src/files"
+	"github.com/melatonein5/DirHash/src/yara"
 )
 
 // arguments is a global struct that holds the arguments provided in the command line
@@ -75,4 +76,48 @@ func main() {
 		}
 		log.Printf("Output written to: %s (format: %s)", arguments.StrOutputFile, arguments.OutputFormat)
 	}
+
+	// Generate YARA rule if requested
+	if arguments.YaraOutput {
+		err := generateYaraRule(hashedFiles)
+		if err != nil {
+			log.Fatalf("Error generating YARA rule: %v", err)
+		}
+	}
+}
+
+// generateYaraRule creates and writes a YARA rule based on the processed files
+func generateYaraRule(hashedFiles []*files.File) error {
+	var rule *yara.YaraRule
+	var err error
+
+	// Determine rule name
+	ruleName := arguments.YaraRuleName
+	if ruleName == "" {
+		ruleName = "dirhash_generated_rule"
+	}
+
+	// Generate rule based on mode
+	if arguments.YaraHashOnly {
+		// Hash-only mode: only include hash-based conditions
+		hashTypes := append([]string{}, arguments.StrHashAlgorithms...)
+		rule, err = yara.GenerateYaraRuleFromHashes(hashedFiles, ruleName, hashTypes)
+	} else {
+		// Standard mode: include both hashes and filenames
+		rule, err = yara.GenerateYaraRule(hashedFiles, ruleName)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	// Write YARA rule to file
+	yaraContent := rule.ToYaraFormat()
+	err = os.WriteFile(arguments.YaraFile, []byte(yaraContent), 0644)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("YARA rule written to: %s (rule name: %s)", arguments.YaraFile, rule.Name)
+	return nil
 }

@@ -17,6 +17,10 @@ func ParseArgs(rawArgs []string) (Args, error) {
 	args.OutputToTerminal = false
 	args.WriteToFile = true
 	args.OutputFormat = "standard"
+	args.YaraOutput = false
+	args.YaraFile = ""
+	args.YaraRuleName = ""
+	args.YaraHashOnly = false
 	args.Help = false
 
 	//Get the length of the raw arguments for later use
@@ -79,6 +83,30 @@ func ParseArgs(rawArgs []string) (Args, error) {
 				args.OutputFormat = format
 				// Skip the next argument since it's the value for the flag
 				i += 2
+			case "-y", "--yara":
+				//YARA output file
+				nextArg := i + 1
+				if nextArg >= rawArgsLen {
+					return args, errors.New("missing value for -y | --yara flag")
+				}
+				args.YaraFile = rawArgs[nextArg]
+				args.YaraOutput = true
+				// Skip the next argument since it's the value for the flag
+				i += 2
+			case "--yara-rule-name":
+				//YARA rule name
+				nextArg := i + 1
+				if nextArg >= rawArgsLen {
+					return args, errors.New("missing value for --yara-rule-name flag")
+				}
+				args.YaraRuleName = rawArgs[nextArg]
+				// Skip the next argument since it's the value for the flag
+				i += 2
+			case "--yara-hash-only":
+				//YARA hash-only mode
+				args.YaraHashOnly = true
+				// Move to the next argument
+				i++
 			case "-h", "--help":
 				//Help flag
 				args.Help = true

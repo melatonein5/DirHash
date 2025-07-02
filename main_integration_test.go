@@ -8,6 +8,7 @@ import (
 
 	"github.com/melatonein5/DirHash/src/args"
 	"github.com/melatonein5/DirHash/src/files"
+	"github.com/melatonein5/DirHash/src/yara"
 )
 
 // TestMainLogic tests the main application logic flow
@@ -296,5 +297,226 @@ func TestMainSecurityWorkflow(t *testing.T) {
 		if !strings.Contains(iocString, expectedFile) {
 			t.Errorf("IOC output should contain %s", expectedFile)
 		}
+	}
+}
+
+// TestMainYaraIntegration tests YARA rule generation functionality
+func TestMainYaraIntegration(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "dirhash_yara_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create test files
+	testFiles := map[string]string{
+		"malware.exe": "malicious content here",
+		"trojan.dll":  "another malicious file",
+		"spyware.bin": "spyware payload",
+	}
+
+	for filename, content := range testFiles {
+		filePath := filepath.Join(tmpDir, filename)
+		err = os.WriteFile(filePath, []byte(content), 0644)
+		if err != nil {
+			t.Fatalf("Failed to create test file %s: %v", filename, err)
+		}
+	}
+
+	// Test YARA generation with all hash types
+	testArgs := []string{
+		"-i", tmpDir,
+		"-a", "md5", "sha256", "sha512",
+		"-y", filepath.Join(tmpDir, "malware.yar"),
+		"--yara-rule-name", "malware_detection",
+	}
+
+	parsedArgs, err := args.ParseArgs(testArgs)
+	if err != nil {
+		t.Fatalf("Failed to parse args: %v", err)
+	}
+
+	// Execute main workflow
+	enumFiles, err := files.EnumerateFiles(parsedArgs.StrInputDir)
+	if err != nil {
+		t.Fatalf("Error enumerating files: %v", err)
+	}
+
+	hashedFiles, err := files.HashFiles(enumFiles, parsedArgs.HashAlgorithmId)
+	if err != nil {
+		t.Fatalf("Error hashing files: %v", err)
+	}
+
+	// Test YARA rule generation (mimicking main.go logic)
+	var rule *yara.YaraRule
+	ruleName := parsedArgs.YaraRuleName
+	if ruleName == "" {
+		ruleName = "dirhash_generated_rule"
+	}
+
+	if parsedArgs.YaraHashOnly {
+		hashTypes := append([]string{}, parsedArgs.StrHashAlgorithms...)
+		rule, err = yara.GenerateYaraRuleFromHashes(hashedFiles, ruleName, hashTypes)
+	} else {
+		rule, err = yara.GenerateYaraRule(hashedFiles, ruleName)
+	}
+
+	if err != nil {
+		t.Fatalf("Failed to generate YARA rule: %v", err)
+	}
+
+	// Write YARA rule
+	yaraContent := rule.ToYaraFormat()
+	err = os.WriteFile(parsedArgs.YaraFile, []byte(yaraContent), 0644)
+	if err != nil {
+		t.Fatalf("Failed to write YARA file: %v", err)
+	}
+
+	// Verify YARA rule was created
+	if _, err := os.Stat(parsedArgs.YaraFile); os.IsNotExist(err) {
+		t.Error("YARA rule file should have been created")
+	}
+
+	// Read and verify YARA content
+	yaraFileContent, err := os.ReadFile(parsedArgs.YaraFile)
+	if err != nil {
+		t.Fatalf("Failed to read YARA file: %v", err)
+	}
+
+	yaraString := string(yaraFileContent)
+
+	// Verify YARA rule structure
+	expectedElements := []string{
+		"rule malware_detection",
+		"meta:",
+		"author = \"DirHash\"",
+		"strings:",
+		"condition:",
+	}
+
+	for _, element := range expectedElements {
+		if !strings.Contains(yaraString, element) {
+			t.Errorf("YARA rule should contain '%s'", element)
+		}
+	}
+
+	// Verify hash strings are present
+	if !strings.Contains(yaraString, "md5") {
+		t.Error("YARA rule should contain MD5 hash strings")
+	}
+	if !strings.Contains(yaraString, "sha256") {
+		t.Error("YARA rule should contain SHA256 hash strings")
+	}
+	if !strings.Contains(yaraString, "sha512") {
+		t.Error("YARA rule should contain SHA512 hash strings")
+	}
+
+	// Verify filename strings are present
+	for filename := range testFiles {
+		if !strings.Contains(yaraString, filename) {
+			t.Errorf("YARA rule should contain filename '%s'", filename)
+		}
+	}
+}
+
+// TestMainYaraHashOnlyMode tests YARA hash-only mode
+func TestMainYaraHashOnlyMode(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "dirhash_yara_hash_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create test file
+	testFile := filepath.Join(tmpDir, "suspicious.exe")
+	err = os.WriteFile(testFile, []byte("suspicious content"), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// Test YARA hash-only generation
+	testArgs := []string{
+		"-i", tmpDir,
+		"-a", "md5", "sha256",
+		"-y", filepath.Join(tmpDir, "hashes.yar"),
+		"--yara-rule-name", "hash_detection",
+		"--yara-hash-only",
+	}
+
+	parsedArgs, err := args.ParseArgs(testArgs)
+	if err != nil {
+		t.Fatalf("Failed to parse args: %v", err)
+	}
+
+	// Execute workflow
+	enumFiles, err := files.EnumerateFiles(parsedArgs.StrInputDir)
+	if err != nil {
+		t.Fatalf("Error enumerating files: %v", err)
+	}
+
+	hashedFiles, err := files.HashFiles(enumFiles, parsedArgs.HashAlgorithmId)
+	if err != nil {
+		t.Fatalf("Error hashing files: %v", err)
+	}
+
+	// Generate hash-only YARA rule
+	hashTypes := append([]string{}, parsedArgs.StrHashAlgorithms...)
+	rule, err := yara.GenerateYaraRuleFromHashes(hashedFiles, parsedArgs.YaraRuleName, hashTypes)
+	if err != nil {
+		t.Fatalf("Failed to generate hash-only YARA rule: %v", err)
+	}
+
+	// Write and verify
+	yaraContent := rule.ToYaraFormat()
+	err = os.WriteFile(parsedArgs.YaraFile, []byte(yaraContent), 0644)
+	if err != nil {
+		t.Fatalf("Failed to write YARA file: %v", err)
+	}
+
+	// Read and verify content
+	yaraFileContent, err := os.ReadFile(parsedArgs.YaraFile)
+	if err != nil {
+		t.Fatalf("Failed to read YARA file: %v", err)
+	}
+
+	yaraString := string(yaraFileContent)
+
+	// Verify hash-only content
+	if !strings.Contains(yaraString, "rule hash_detection") {
+		t.Error("YARA rule should contain correct rule name")
+	}
+
+	if !strings.Contains(yaraString, "md5") {
+		t.Error("Hash-only rule should contain MD5 hashes")
+	}
+	if !strings.Contains(yaraString, "sha256") {
+		t.Error("Hash-only rule should contain SHA256 hashes")
+	}
+
+	// Verify NO filename strings in hash-only mode
+	if strings.Contains(yaraString, "suspicious.exe") {
+		t.Error("Hash-only rule should NOT contain filename strings")
+	}
+	if strings.Contains(yaraString, "$filename") {
+		t.Error("Hash-only rule should NOT contain filename variables")
+	}
+}
+
+// TestMainYaraErrorHandling tests YARA error scenarios
+func TestMainYaraErrorHandling(t *testing.T) {
+	// Test empty files list
+	_, err := yara.GenerateYaraRule([]*files.File{}, "test")
+	if err == nil {
+		t.Error("Should return error for empty files list")
+	}
+
+	// Test invalid hash types
+	testFile := &files.File{
+		FileName: "test.exe",
+		Hashes:   map[string]string{"md5": "somehash"},
+	}
+	_, err = yara.GenerateYaraRuleFromHashes([]*files.File{testFile}, "test", []string{"nonexistent"})
+	if err == nil {
+		t.Error("Should return error for invalid hash types")
 	}
 }

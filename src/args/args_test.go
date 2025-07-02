@@ -23,6 +23,10 @@ func TestParseArgs_BasicUsage(t *testing.T) {
 				OutputToTerminal:  true,
 				WriteToFile:       false,
 				OutputFormat:      "standard",
+				YaraOutput:        false,
+				YaraFile:          "",
+				YaraRuleName:      "",
+				YaraHashOnly:      false,
 				Help:              false,
 			},
 			hasError: false,
@@ -38,6 +42,10 @@ func TestParseArgs_BasicUsage(t *testing.T) {
 				OutputToTerminal:  true,
 				WriteToFile:       false,
 				OutputFormat:      "standard",
+				YaraOutput:        false,
+				YaraFile:          "",
+				YaraRuleName:      "",
+				YaraHashOnly:      false,
 				Help:              false,
 			},
 			hasError: false,
@@ -53,6 +61,10 @@ func TestParseArgs_BasicUsage(t *testing.T) {
 				OutputToTerminal:  false,
 				WriteToFile:       true,
 				OutputFormat:      "standard",
+				YaraOutput:        false,
+				YaraFile:          "",
+				YaraRuleName:      "",
+				YaraHashOnly:      false,
 				Help:              false,
 			},
 			hasError: false,
@@ -68,6 +80,10 @@ func TestParseArgs_BasicUsage(t *testing.T) {
 				OutputToTerminal:  true,
 				WriteToFile:       false,
 				OutputFormat:      "standard",
+				YaraOutput:        false,
+				YaraFile:          "",
+				YaraRuleName:      "",
+				YaraHashOnly:      false,
 				Help:              false,
 			},
 			hasError: false,
@@ -83,6 +99,10 @@ func TestParseArgs_BasicUsage(t *testing.T) {
 				OutputToTerminal:  true,
 				WriteToFile:       false,
 				OutputFormat:      "standard",
+				YaraOutput:        false,
+				YaraFile:          "",
+				YaraRuleName:      "",
+				YaraHashOnly:      false,
 				Help:              false,
 			},
 			hasError: false,
@@ -98,6 +118,10 @@ func TestParseArgs_BasicUsage(t *testing.T) {
 				OutputToTerminal:  true,
 				WriteToFile:       false,
 				OutputFormat:      "condensed",
+				YaraOutput:        false,
+				YaraFile:          "",
+				YaraRuleName:      "",
+				YaraHashOnly:      false,
 				Help:              false,
 			},
 			hasError: false,
@@ -113,7 +137,68 @@ func TestParseArgs_BasicUsage(t *testing.T) {
 				OutputToTerminal:  true,
 				WriteToFile:       false,
 				OutputFormat:      "standard",
+				YaraOutput:        false,
+				YaraFile:          "",
+				YaraRuleName:      "",
+				YaraHashOnly:      false,
 				Help:              true,
+			},
+			hasError: false,
+		},
+		{
+			name:    "yara output flag",
+			rawArgs: []string{"-y", "rules.yar"},
+			expected: Args{
+				StrInputDir:       ".",
+				StrOutputFile:     "",
+				StrHashAlgorithms: []string{"md5"},
+				HashAlgorithmId:   []int{0},
+				OutputToTerminal:  true,
+				WriteToFile:       false,
+				OutputFormat:      "standard",
+				YaraOutput:        true,
+				YaraFile:          "rules.yar",
+				YaraRuleName:      "",
+				YaraHashOnly:      false,
+				Help:              false,
+			},
+			hasError: false,
+		},
+		{
+			name:    "yara with rule name",
+			rawArgs: []string{"-y", "rules.yar", "--yara-rule-name", "malware_detection"},
+			expected: Args{
+				StrInputDir:       ".",
+				StrOutputFile:     "",
+				StrHashAlgorithms: []string{"md5"},
+				HashAlgorithmId:   []int{0},
+				OutputToTerminal:  true,
+				WriteToFile:       false,
+				OutputFormat:      "standard",
+				YaraOutput:        true,
+				YaraFile:          "rules.yar",
+				YaraRuleName:      "malware_detection",
+				YaraHashOnly:      false,
+				Help:              false,
+			},
+			hasError: false,
+		},
+		{
+			name:    "yara hash only mode",
+			rawArgs: []string{"-y", "rules.yar", "--yara-hash-only"},
+			expected: Args{
+				StrInputDir:       ".",
+				StrOutputFile:     "",
+				StrHashAlgorithms: []string{"md5"},
+				HashAlgorithmId:   []int{0},
+				OutputToTerminal:  true,
+				WriteToFile:       false,
+				OutputFormat:      "standard",
+				YaraOutput:        true,
+				YaraFile:          "rules.yar",
+				YaraRuleName:      "",
+				YaraHashOnly:      true,
+				Help:              false,
 			},
 			hasError: false,
 		},
@@ -171,6 +256,14 @@ func TestParseArgs_ErrorCases(t *testing.T) {
 			name:    "unexpected argument",
 			rawArgs: []string{"unexpected"},
 		},
+		{
+			name:    "missing yara file value",
+			rawArgs: []string{"-y"},
+		},
+		{
+			name:    "missing yara rule name value",
+			rawArgs: []string{"--yara-rule-name"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -190,6 +283,9 @@ func TestParseArgs_LongFlags(t *testing.T) {
 		"--algorithm", "sha256", "md5",
 		"--format", "ioc",
 		"--terminal",
+		"--yara", "rules.yar",
+		"--yara-rule-name", "test_rule",
+		"--yara-hash-only",
 		"--help",
 	}
 
@@ -201,6 +297,10 @@ func TestParseArgs_LongFlags(t *testing.T) {
 		OutputToTerminal:  true,
 		WriteToFile:       true,
 		OutputFormat:      "ioc",
+		YaraOutput:        true,
+		YaraFile:          "rules.yar",
+		YaraRuleName:      "test_rule",
+		YaraHashOnly:      true,
 		Help:              true,
 	}
 
@@ -220,6 +320,8 @@ func TestParseArgs_ComplexCase(t *testing.T) {
 		"-o", "iocs.csv",
 		"-a", "md5", "sha1", "sha256", "sha512",
 		"-f", "ioc",
+		"-y", "malware.yar",
+		"--yara-rule-name", "suspicious_files",
 	}
 
 	result, err := ParseArgs(rawArgs)
@@ -235,6 +337,15 @@ func TestParseArgs_ComplexCase(t *testing.T) {
 	}
 	if result.OutputFormat != "ioc" {
 		t.Errorf("Expected format 'ioc', got '%s'", result.OutputFormat)
+	}
+	if !result.YaraOutput {
+		t.Error("Expected YARA output to be enabled")
+	}
+	if result.YaraFile != "malware.yar" {
+		t.Errorf("Expected YARA file 'malware.yar', got '%s'", result.YaraFile)
+	}
+	if result.YaraRuleName != "suspicious_files" {
+		t.Errorf("Expected YARA rule name 'suspicious_files', got '%s'", result.YaraRuleName)
 	}
 	if len(result.HashAlgorithmId) != 4 {
 		t.Errorf("Expected 4 algorithms, got %d", len(result.HashAlgorithmId))
