@@ -179,6 +179,5 @@ go run dirhash.go -i /system/files -t -f condensed -a sha256 md5
 
 ## Roadmap
 Future enhancements planned:
-1. Direct YARA rule generation output format
-2. KQL query template generation
+1. KQL query template generation
 
