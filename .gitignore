@@ -1,1 +1,8 @@
-# Trigger Go Report refresh
+# Build artifacts
+DirHash
+dirhash
+*.exe
+
+# Coverage files
+coverage.out
+coverage.html
