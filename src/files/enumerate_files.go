@@ -14,6 +14,10 @@ func EnumerateFiles(dir string) ([]*File, error) {
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			log.Printf("Error accessing path %s: %v", path, err)
+			// If this is the root directory, return the error to stop processing
+			if path == dir {
+				return err
+			}
 			// Skip this file or directory and continue
 			return nil
 		}
