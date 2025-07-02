@@ -60,7 +60,7 @@ type Args struct {
 	// Input Directory Configuration
 	StrInputDir string // Path to directory containing files to hash (default: ".")
 
-	// Output File Configuration  
+	// Output File Configuration
 	StrOutputFile    string // Path to output file for hash results (empty = no file output)
 	OutputToTerminal bool   // Whether to display results on terminal (default: true when no output file)
 	WriteToFile      bool   // Whether to write results to file (set automatically when StrOutputFile provided)

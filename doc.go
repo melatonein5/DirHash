@@ -71,15 +71,18 @@
 // # Output Formats
 //
 // Standard Format: Traditional CSV with separate rows per hash type
+//
 //	File Name,Path,Size,Hash,Hash Type
 //	malware.exe,/tmp/malware.exe,1024,d41d8cd98f00b204e9800998ecf8427e,md5
 //	malware.exe,/tmp/malware.exe,1024,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,sha256
 //
 // Condensed Format: All hashes on single row per file
+//
 //	File Name,Path,Size,MD5,SHA256
 //	malware.exe,/tmp/malware.exe,1024,d41d8cd98f00b204e9800998ecf8427e,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 //
 // IOC Format: Security tool-friendly format with underscored headers
+//
 //	file_name,file_path,file_size,md5,sha256
 //	malware.exe,/tmp/malware.exe,1024,d41d8cd98f00b204e9800998ecf8427e,e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 //
@@ -88,6 +91,7 @@
 // DirHash can generate YARA rules for automated detection:
 //
 // Standard Rules (hashes + filenames):
+//
 //	rule malware_detection {
 //	    meta:
 //	        description = "Generated rule based on 2 files"
@@ -102,6 +106,7 @@
 //	}
 //
 // Hash-Only Rules (cryptographic hashes only):
+//
 //	rule hash_detection {
 //	    meta:
 //	        description = "Hash-based rule for 1 files"

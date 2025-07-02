@@ -229,7 +229,7 @@ func (r *YaraRule) ToYaraFormat() string {
 	builder.WriteString(fmt.Sprintf("        description = \"%s\"\n", r.Description))
 	builder.WriteString(fmt.Sprintf("        author = \"%s\"\n", r.Author))
 	builder.WriteString(fmt.Sprintf("        date = \"%s\"\n", r.Date))
-	
+
 	if len(r.Tags) > 0 {
 		builder.WriteString(fmt.Sprintf("        tags = \"%s\"\n", strings.Join(r.Tags, ", ")))
 	}
@@ -262,10 +262,10 @@ func (r *YaraRule) ToYaraFormat() string {
 // generateHashStrings creates YARA strings from file hashes
 func generateHashStrings(files []*files.File) []YaraString {
 	var strings []YaraString
-	
+
 	for _, file := range files {
 		baseName := sanitizeStringName(file.FileName)
-		
+
 		// Add hash strings for each available hash type
 		hashTypes := []string{"md5", "sha1", "sha256", "sha512"}
 		for _, hashType := range hashTypes {
@@ -279,7 +279,7 @@ func generateHashStrings(files []*files.File) []YaraString {
 			}
 		}
 	}
-	
+
 	return strings
 }
 
@@ -287,7 +287,7 @@ func generateHashStrings(files []*files.File) []YaraString {
 func generateFilenameStrings(files []*files.File) []YaraString {
 	var strings []YaraString
 	seenNames := make(map[string]bool)
-	
+
 	for _, file := range files {
 		fileName := filepath.Base(file.FileName)
 		if !seenNames[fileName] {
@@ -300,7 +300,7 @@ func generateFilenameStrings(files []*files.File) []YaraString {
 			})
 		}
 	}
-	
+
 	return strings
 }
 
@@ -414,13 +414,13 @@ func formatHashForYara(hash string) string {
 	// Convert hash to YARA hex format (space-separated hex bytes)
 	var result []string
 	hash = strings.ToUpper(hash)
-	
+
 	for i := 0; i < len(hash); i += 2 {
 		if i+1 < len(hash) {
 			result = append(result, hash[i:i+2])
 		}
 	}
-	
+
 	return strings.Join(result, " ")
 }
 
