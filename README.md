@@ -1,7 +1,7 @@
 # DirHash
 
 [![Test Coverage](https://github.com/melatonein5/DirHash/actions/workflows/test-coverage.yml/badge.svg)](https://github.com/melatonein5/DirHash/actions/workflows/test-coverage.yml)
-![Coverage](https://img.shields.io/badge/Coverage-94.1%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-94.9%25-brightgreen)
 [![Go Report Card](https://goreportcard.com/badge/github.com/melatonein5/DirHash)](https://goreportcard.com/report/github.com/melatonein5/DirHash)
 
 DirHash is a command line tool to take a directory and return the file hashes.
