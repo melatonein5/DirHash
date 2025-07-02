@@ -83,7 +83,7 @@ func TestWriteOutput_StandardFormat(t *testing.T) {
 
 	// Check that we have the right number of data rows
 	// Each file should have one row per hash type
-	expectedRows := 2 + 3 // file1 has 2 hashes, file2 has 3 hashes
+	expectedRows := 2 + 3          // file1 has 2 hashes, file2 has 3 hashes
 	actualRows := len(records) - 1 // subtract header
 	if actualRows != expectedRows {
 		t.Errorf("Expected %d data rows, got %d", expectedRows, actualRows)
@@ -321,10 +321,10 @@ func TestGetHashOrEmpty(t *testing.T) {
 func TestWriteOutput_InvalidPath(t *testing.T) {
 	// Test with invalid output path
 	testFiles := createTestFiles()
-	
+
 	// Use invalid path (directory that doesn't exist)
 	invalidPath := "/nonexistent/directory/output.csv"
-	
+
 	err := WriteOutput(testFiles, invalidPath)
 	if err == nil {
 		t.Error("Expected error for invalid output path, got nil")
@@ -364,7 +364,7 @@ func TestWriteOutput_LargeFile(t *testing.T) {
 	}
 
 	for i, writeFunc := range formats {
-		testFile := filepath.Join(filepath.Dir(tmpFile.Name()), 
+		testFile := filepath.Join(filepath.Dir(tmpFile.Name()),
 			"test_large_"+string(rune('0'+i))+".csv")
 		defer os.Remove(testFile)
 

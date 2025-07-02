@@ -13,7 +13,7 @@ func TestNewFile(t *testing.T) {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
 	defer os.Remove(tmpFile.Name())
-	
+
 	// Write some test data
 	testData := "test file content"
 	_, err = tmpFile.WriteString(testData)

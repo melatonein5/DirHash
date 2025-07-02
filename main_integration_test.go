@@ -21,8 +21,8 @@ func TestMainLogic(t *testing.T) {
 
 	// Create test files
 	testFiles := map[string]string{
-		"sample1.txt": "hello world",
-		"sample2.exe": "binary content", 
+		"sample1.txt":  "hello world",
+		"sample2.exe":  "binary content",
 		"document.pdf": "pdf content here",
 	}
 
@@ -51,7 +51,7 @@ func TestMainLogic(t *testing.T) {
 		t.Errorf("Expected %d files, got %d", len(testFiles), len(fs))
 	}
 
-	// Step 2: Hash files (main.go:42)  
+	// Step 2: Hash files (main.go:42)
 	hashedFiles, err := files.HashFiles(fs, parsedArgs.HashAlgorithmId)
 	if err != nil {
 		t.Fatalf("Error hashing files: %v", err)
@@ -76,7 +76,7 @@ func TestMainLogic(t *testing.T) {
 
 	// Step 3: Test output logic (main.go:61-77)
 	outputFile := filepath.Join(tmpDir, "output.csv")
-	
+
 	// Test format selection switch (main.go:64-71)
 	var writeErr error
 	switch parsedArgs.OutputFormat {
@@ -104,7 +104,7 @@ func TestMainLogic(t *testing.T) {
 	}
 
 	outputContent := string(content)
-	
+
 	// Check IOC format headers (lowercase with underscores)
 	expectedHeaders := []string{"file_path", "file_name", "file_size", "md5", "sha256"}
 	for _, header := range expectedHeaders {
@@ -187,10 +187,10 @@ func TestMainOutputFormats(t *testing.T) {
 
 	// Test all format switch cases (main.go:64-71)
 	formats := []string{"standard", "condensed", "ioc"}
-	
+
 	for _, format := range formats {
 		outputFile := filepath.Join(tmpDir, "output_"+format+".csv")
-		
+
 		// Test the exact switch logic from main()
 		var writeErr error
 		switch format {
@@ -230,7 +230,7 @@ func TestMainSecurityWorkflow(t *testing.T) {
 	// Create security-relevant test files
 	securityFiles := map[string]string{
 		"malware.exe":           "suspicious executable",
-		"document.pdf":          "normal document", 
+		"document.pdf":          "normal document",
 		"suspicious/trojan.dll": "malicious library",
 	}
 

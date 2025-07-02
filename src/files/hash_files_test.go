@@ -160,11 +160,11 @@ func TestHashFiles_MultipleFiles(t *testing.T) {
 		if len(file.Hashes) != 2 {
 			t.Errorf("File %s: expected 2 hashes, got %d", file.FileName, len(file.Hashes))
 		}
-		
+
 		if _, exists := file.Hashes["md5"]; !exists {
 			t.Errorf("File %s: MD5 hash not found", file.FileName)
 		}
-		
+
 		if _, exists := file.Hashes["sha256"]; !exists {
 			t.Errorf("File %s: SHA256 hash not found", file.FileName)
 		}

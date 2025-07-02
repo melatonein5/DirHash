@@ -122,14 +122,14 @@ func TestParseArgs_BasicUsage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := ParseArgs(tt.rawArgs)
-			
+
 			if tt.hasError && err == nil {
 				t.Errorf("Expected error but got none")
 			}
 			if !tt.hasError && err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
-			
+
 			if !tt.hasError && !reflect.DeepEqual(result, tt.expected) {
 				t.Errorf("ParseArgs() = %+v, expected %+v", result, tt.expected)
 			}

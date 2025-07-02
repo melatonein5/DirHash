@@ -85,7 +85,7 @@ func TestOutputFiles_StandardFormat(t *testing.T) {
 			contentLines++
 		}
 	}
-	
+
 	// test1.txt has 2 hashes, test2.go has 4 hashes = 6 total rows
 	if contentLines != 6 {
 		t.Errorf("Expected 6 content lines (2+4 hashes), got %d", contentLines)
@@ -136,7 +136,7 @@ func TestOutputFilesCondensed(t *testing.T) {
 			fileLines++
 		}
 	}
-	
+
 	if fileLines != 2 {
 		t.Errorf("Expected 2 file lines in condensed format, got %d", fileLines)
 	}
@@ -178,7 +178,7 @@ func TestOutputFilesIOC(t *testing.T) {
 			fileLines++
 		}
 	}
-	
+
 	if fileLines != 2 {
 		t.Errorf("Expected 2 file lines in IOC format, got %d", fileLines)
 	}
@@ -335,7 +335,7 @@ func TestOutputFilesCondensed_SingleHash(t *testing.T) {
 			break
 		}
 	}
-	
+
 	if strings.Contains(lineWithFile, " | ") {
 		t.Error("Single hash output should not contain pipe separator")
 	}

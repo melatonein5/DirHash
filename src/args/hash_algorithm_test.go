@@ -83,11 +83,11 @@ func TestStrHashAlgorithmToId_AllValidAlgorithms(t *testing.T) {
 func TestStrHashAlgorithmToId_ConsistencyWithParseArgs(t *testing.T) {
 	// Test that the algorithm mapping is consistent with ParseArgs
 	algorithms := []string{"md5", "sha1", "sha256", "sha512"}
-	
+
 	for i, algo := range algorithms {
 		expectedId := i
 		actualId := StrHashAlgorithmToId(algo)
-		
+
 		if actualId != expectedId {
 			t.Errorf("Algorithm %s should map to ID %d, but got %d", algo, expectedId, actualId)
 		}

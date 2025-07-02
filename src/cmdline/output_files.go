@@ -76,7 +76,7 @@ func OutputFilesCondensed(fileList []*files.File) {
 			for _, hashType := range hashTypes {
 				hashStrings = append(hashStrings, fmt.Sprintf("%s:%s", hashType, f.Hashes[hashType]))
 			}
-			
+
 			fmt.Fprintf(w, "%s\t%s\t%d\t%s\n", f.FileName, f.Path, f.Size, strings.Join(hashStrings, " | "))
 		}
 	}
@@ -105,7 +105,7 @@ func OutputFilesIOC(fileList []*files.File) {
 		sha256Hash := getHashOrNA(f.Hashes, "sha256")
 		sha512Hash := getHashOrNA(f.Hashes, "sha512")
 
-		fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%s\t%s\t%s\n", 
+		fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%s\t%s\t%s\n",
 			f.Path, f.FileName, f.Size, md5Hash, sha1Hash, sha256Hash, sha512Hash)
 	}
 

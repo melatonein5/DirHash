@@ -111,9 +111,9 @@ func TestEnumerateFiles_WithSubdirectories(t *testing.T) {
 
 	// Create files in root and subdirectory
 	files := map[string]string{
-		"root.txt":           "root content",
-		"subdir/nested.txt":  "nested content",
-		"subdir/another.go":  "go content",
+		"root.txt":          "root content",
+		"subdir/nested.txt": "nested content",
+		"subdir/another.go": "go content",
 	}
 
 	for relPath, content := range files {

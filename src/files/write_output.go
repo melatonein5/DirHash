@@ -99,7 +99,7 @@ func WriteOutputCondensed(files []*File, outputPath string) error {
 	// Write file data
 	for _, f := range files {
 		record := []string{f.Path, f.FileName, strconv.FormatInt(f.Size, 10)}
-		
+
 		// Add hash values in order
 		for _, hashType := range hashTypes {
 			if hash, exists := f.Hashes[hashType]; exists {
@@ -108,7 +108,7 @@ func WriteOutputCondensed(files []*File, outputPath string) error {
 				record = append(record, "")
 			}
 		}
-		
+
 		if err := writer.Write(record); err != nil {
 			return err
 		}
@@ -145,7 +145,7 @@ func WriteOutputForIOC(files []*File, outputPath string) error {
 			getHashOrEmpty(f.Hashes, "sha256"),
 			getHashOrEmpty(f.Hashes, "sha512"),
 		}
-		
+
 		if err := writer.Write(record); err != nil {
 			return err
 		}
