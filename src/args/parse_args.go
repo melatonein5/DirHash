@@ -16,6 +16,7 @@ func ParseArgs(rawArgs []string) (Args, error) {
 	args.HashAlgorithmId = []int{}
 	args.OutputToTerminal = false
 	args.WriteToFile = true
+	args.OutputFormat = "standard"
 	args.Help = false
 
 	//Get the length of the raw arguments for later use
@@ -65,6 +66,19 @@ func ParseArgs(rawArgs []string) (Args, error) {
 				args.OutputToTerminal = true
 				// Move to the next argument
 				i++
+			case "-f", "--format":
+				//Output format
+				nextArg := i + 1
+				if nextArg >= rawArgsLen {
+					return args, errors.New("missing value for -f | --format flag")
+				}
+				format := rawArgs[nextArg]
+				if format != "standard" && format != "condensed" && format != "ioc" {
+					return args, errors.New("invalid output format: " + format + ". Valid options: standard, condensed, ioc")
+				}
+				args.OutputFormat = format
+				// Skip the next argument since it's the value for the flag
+				i += 2
 			case "-h", "--help":
 				//Help flag
 				args.Help = true

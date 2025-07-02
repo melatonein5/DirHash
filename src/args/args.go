@@ -10,6 +10,8 @@ type Args struct {
 	//HashAlgorithm
 	StrHashAlgorithms []string
 	HashAlgorithmId   []int
+	//Output Format
+	OutputFormat string // "standard", "condensed", "ioc"
 	//Flags
 	Help bool
 }
