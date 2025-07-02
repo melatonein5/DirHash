@@ -8,6 +8,26 @@ DirHash is a command-line tool that recursively traverses directories and genera
 
 ## Development Commands
 
+### Testing
+```bash
+# Run all tests with coverage (as used in CI)
+go test -coverprofile=coverage.out ./src/...
+
+# Run all tests except problematic main integration tests
+go test ./src/...
+
+# Run specific package tests
+go test ./src/args
+go test ./src/files
+go test ./src/cmdline
+go test ./src/yara
+
+# Generate coverage report
+go tool cover -html=coverage.out -o coverage.html
+```
+
+**Note**: The main integration tests (`main_integration_test.go`) are excluded from CI testing due to test flag compatibility issues. The GitHub Actions workflow uses `go test ./src/...` which focuses on package-specific tests.
+
 ### Running the Application
 ```bash
 # Run with Go runtime (development)
