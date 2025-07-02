@@ -46,10 +46,21 @@ jobs:
       run: |
         go tool cover -html=coverage.out -o coverage.html
         
-    - name: Generate coverage badge
-      uses: tj-actions/coverage-badge-go@v2
-      with:
-        filename: coverage.out
+    - name: Extract coverage percentage
+      run: |
+        COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+        echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
+        echo "Coverage: $COVERAGE%"
+    
+    - name: Update README badge
+      run: |
+        # Determine badge color
+        if (( $(echo "$COVERAGE > 80" | bc -l) )); then COLOR="brightgreen"; fi
+        if (( $(echo "$COVERAGE > 60" | bc -l) )) && (( $(echo "$COVERAGE <= 80" | bc -l) )); then COLOR="yellow"; fi
+        if (( $(echo "$COVERAGE <= 60" | bc -l) )); then COLOR="red"; fi
+        
+        # Update README.md with new coverage badge
+        sed -i "s/Coverage-[0-9.]*%25-[a-z]*/Coverage-$COVERAGE%25-$COLOR/" README.md
     
     - name: Verify changed files
       uses: tj-actions/verify-changed-files@v17
@@ -63,7 +74,7 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add README.md
-        git commit -m "Updated coverage badge."
+        git commit -m "Updated coverage badge to $COVERAGE%"
     
     - name: Push changes
       if: steps.verify-changed-files.outputs.files_changed == 'true'
