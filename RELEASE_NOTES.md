@@ -139,8 +139,7 @@ time go run dirhash.go -i /large/directory -a md5 sha1 sha256 sha512 -t
 **Planned Features**:
 - Direct YARA rule generation output format
 - KQL query template generation
-- Additional hash algorithms (Blake2, SHA3)
-- REST API for platform integration
+
 
 ### 📖 Migration Guide
 
@@ -149,22 +148,11 @@ time go run dirhash.go -i /large/directory -a md5 sha1 sha256 sha512 -t
 - Performance improvements are automatic
 - Default output format maintains backward compatibility
 
-**For Developers/Integrators**:
-- Update any code that directly uses the `File` struct
-- Replace `Hash` and `HashType` field access with `Hashes` map lookup
-- Update function calls to use pointer types `[]*File`
-
 ### 🔧 System Requirements
 
 - Go 1.24.4 or higher
 - Multi-core CPU recommended for optimal performance
 - Sufficient RAM for concurrent processing (typically minimal impact)
-
-### 🙏 Acknowledgments
-
-This release represents a significant architectural overhaul focused on performance, extensibility, and security tool integration. The concurrent processing design provides substantial performance improvements while adding powerful new output formats for modern threat intelligence workflows.
-
-Special thanks to the security community for feedback on IOC format requirements and threat hunting use cases.
 
 ---
 
