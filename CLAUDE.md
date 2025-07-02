@@ -40,6 +40,8 @@ The project includes platform-specific installers in the `installer/` directory:
 - Linux installer: `installer/linux/installer.go`
 - Windows installer: `installer/windows/installer.go`
 
+**Note**: The installers embed the `dirhash` binary using `//go:embed dirhash`. The installer directories are excluded from testing in the main project as they require the binary to be built first and copied to their respective directories.
+
 ## Architecture Overview
 
 The codebase follows a clean, modular pipeline architecture:
