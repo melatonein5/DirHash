@@ -32,10 +32,16 @@
 
 ### 📊 New Output Formats
 
-**Three Output Format Options**
+**Three Output Format Options** (applies to both terminal and file output)
 - **Standard Format** (`-f standard` or default): Traditional format with separate rows per hash type per file
 - **Condensed Format** (`-f condensed`): All hash values on single row per file with dynamic columns
 - **IOC Format** (`-f ioc`): Security-optimized format for threat intelligence tools
+
+**Unified Terminal and File Output**
+- Format option (`-f`) now affects both terminal display and file output
+- Consistent formatting across all output methods
+- Clean tabwriter alignment for terminal display
+- Missing hash handling with "N/A" placeholders in IOC format
 
 **Security Tool Integration**
 - IOC format uses standardized column names: `file_path`, `file_name`, `file_size`, `md5`, `sha1`, `sha256`, `sha512`
@@ -83,7 +89,7 @@
 
 **Format Selection**
 ```bash
--f, --format <format>    Specify the output format (default: standard)
+-f, --format <format>    Specify the output format for both terminal and file output (default: standard)
 ```
 
 **Supported Formats**:
@@ -100,11 +106,17 @@ go run dirhash.go -i /path/to/scan -o output.csv -a sha256 md5
 
 **New Format Options**:
 ```bash
-# Condensed format - all hashes on one row per file
+# Condensed format - all hashes on one row (file output)
 go run dirhash.go -i /path/to/scan -o output.csv -a md5 sha256 -f condensed
 
-# IOC format for security tools
+# Condensed format - all hashes on one row (terminal output)
+go run dirhash.go -i /path/to/scan -t -a md5 sha256 -f condensed
+
+# IOC format for security tools (file output)
 go run dirhash.go -i /suspicious/files -o iocs.csv -a md5 sha1 sha256 sha512 -f ioc
+
+# IOC format for security tools (terminal output)
+go run dirhash.go -i /suspicious/files -t -a md5 sha1 sha256 sha512 -f ioc
 
 # Performance test with all algorithms
 time go run dirhash.go -i /large/directory -a md5 sha1 sha256 sha512 -t

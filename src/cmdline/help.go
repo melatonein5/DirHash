@@ -9,7 +9,7 @@ Options:
   -i, --input-dir <dir>    Specify the input directory (default: current directory)
   -o, --output <file>      Specify the output file (default: no output file)
   -a, --algorithm <alg>    Specify the hash algorithms (default: md5), can take more than 1 argument, separated by spaces
-  -f, --format <format>    Specify the output format (default: standard)
+  -f, --format <format>    Specify the output format for both terminal and file output (default: standard)
   -t, --terminal           Output to terminal (default: false)
   -h, --help               Show this help message and exit
 Supported algorithms:

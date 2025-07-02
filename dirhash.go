@@ -48,7 +48,14 @@ func main() {
 
 	// Check if the output should be written to a file or printed to the terminal
 	if arguments.OutputToTerminal {
-		cmdline.OutputFiles(hashedFiles)
+		switch arguments.OutputFormat {
+		case "condensed":
+			cmdline.OutputFilesCondensed(hashedFiles)
+		case "ioc":
+			cmdline.OutputFilesIOC(hashedFiles)
+		default: // "standard"
+			cmdline.OutputFiles(hashedFiles)
+		}
 	}
 
 	if arguments.WriteToFile {

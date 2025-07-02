@@ -84,3 +84,39 @@ func OutputFilesCondensed(fileList []*files.File) {
 	// Flush the writer to ensure all output is printed
 	w.Flush()
 }
+
+// OutputFilesIOC provides IOC-friendly terminal output format
+func OutputFilesIOC(fileList []*files.File) {
+	if len(fileList) == 0 {
+		fmt.Println("No files to display")
+		return
+	}
+
+	// Create a tab writer to format the output
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+
+	// Print the header with IOC-friendly column names
+	fmt.Fprintln(w, "File Path\tFile Name\tSize\tMD5\tSHA1\tSHA256\tSHA512")
+
+	for _, f := range fileList {
+		// Extract hash values or use "N/A" if not available
+		md5Hash := getHashOrNA(f.Hashes, "md5")
+		sha1Hash := getHashOrNA(f.Hashes, "sha1")
+		sha256Hash := getHashOrNA(f.Hashes, "sha256")
+		sha512Hash := getHashOrNA(f.Hashes, "sha512")
+
+		fmt.Fprintf(w, "%s\t%s\t%d\t%s\t%s\t%s\t%s\n", 
+			f.Path, f.FileName, f.Size, md5Hash, sha1Hash, sha256Hash, sha512Hash)
+	}
+
+	// Flush the writer to ensure all output is printed
+	w.Flush()
+}
+
+// getHashOrNA returns the hash value or "N/A" if not present
+func getHashOrNA(hashes map[string]string, hashType string) string {
+	if hash, exists := hashes[hashType]; exists {
+		return hash
+	}
+	return "N/A"
+}
