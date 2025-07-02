@@ -69,7 +69,7 @@ func main() {
 		default: // "standard"
 			err = files.WriteOutput(hashedFiles, arguments.StrOutputFile)
 		}
-		
+
 		if err != nil {
 			log.Fatalf("Error writing files to output file: %v", err)
 		}
