@@ -176,5 +176,4 @@ go run dirhash.go -i /system/files -o analysis.csv -f condensed -a sha256 md5
 Future enhancements planned:
 1. Direct YARA rule generation output format
 2. KQL query template generation
-3. Additional hash algorithms (Blake2, SHA3)
-4. REST API for platform integration
+
