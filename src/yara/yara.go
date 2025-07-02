@@ -1,3 +1,107 @@
+// Package yara provides functionality for generating YARA rules from file hash data.
+//
+// This package enables the creation of YARA rules that can be used for malware detection,
+// file identification, and security analysis. It supports both comprehensive rules
+// (including file hashes and filenames) and hash-only rules for more targeted detection.
+//
+// # Overview
+//
+// YARA is a tool aimed at helping malware researchers to identify and classify malware samples.
+// This package generates YARA rules based on cryptographic hashes and file metadata collected
+// by DirHash, enabling automated detection of known files across systems.
+//
+// # Usage Examples
+//
+// Basic YARA rule generation:
+//
+//	files := []*files.File{
+//		{FileName: "malware.exe", Hashes: map[string]string{"md5": "abc123", "sha256": "def456"}},
+//	}
+//	rule, err := yara.GenerateYaraRule(files, "malware_detection")
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	yaraContent := rule.ToYaraFormat()
+//	fmt.Println(yaraContent)
+//
+// Hash-only YARA rule generation:
+//
+//	hashTypes := []string{"md5", "sha256"}
+//	rule, err := yara.GenerateYaraRuleFromHashes(files, "hash_detection", hashTypes)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	yaraContent := rule.ToYaraFormat()
+//
+// # Supported Hash Types
+//
+// The package supports the following cryptographic hash algorithms:
+//   - MD5: Fast but cryptographically weak, suitable for file identification
+//   - SHA1: Legacy algorithm, still used in some security contexts
+//   - SHA256: Modern standard for cryptographic hashing
+//   - SHA512: Extended version of SHA256 with larger digest size
+//
+// # YARA Rule Structure
+//
+// Generated YARA rules follow standard YARA syntax and include:
+//
+//   - Rule Header: Contains the rule name (sanitized for YARA compliance)
+//   - Metadata Section: Includes author, description, creation date, and tags
+//   - Strings Section: Defines patterns for hashes and/or filenames
+//   - Condition Section: Specifies logical operators for pattern matching
+//
+// Example generated rule:
+//
+//	rule malware_detection {
+//	    meta:
+//	        description = "Generated rule based on 2 files"
+//	        author = "DirHash"
+//	        date = "2023-12-01"
+//	        tags = "generated, dirhash"
+//	    strings:
+//	        $md5_malware = { AB CD EF 12 34 56 78 90 }
+//	        $sha256_malware = { DE AD BE EF CA FE BA BE }
+//	        $filename_malware = "malware.exe"
+//	    condition:
+//	        any of ($md5_malware, $sha256_malware) or $filename_malware
+//	}
+//
+// # Rule Naming and Sanitization
+//
+// All rule names and string identifiers are automatically sanitized to ensure YARA compliance:
+//   - Invalid characters are replaced with underscores
+//   - Names starting with digits are prefixed with underscore
+//   - Empty names receive default values
+//   - File extensions are removed from filename-based identifiers
+//
+// # Detection Modes
+//
+// The package supports two primary detection modes:
+//
+//  1. Comprehensive Detection: Combines hash-based and filename-based patterns
+//     for maximum coverage. Useful when both hash and filename information
+//     are reliable indicators.
+//
+//  2. Hash-Only Detection: Uses only cryptographic hashes for detection.
+//     Preferred when filenames might be easily changed or when focusing
+//     on content-based identification.
+//
+// # Performance Considerations
+//
+// The package is optimized for generating rules from large file sets:
+//   - Duplicate filenames are automatically deduplicated
+//   - Hash formatting is optimized for YARA's hex pattern syntax
+//   - Condition generation scales efficiently with rule complexity
+//   - Memory usage is minimized through efficient string building
+//
+// # Integration with Security Tools
+//
+// Generated YARA rules can be used with:
+//   - YARA command-line scanner
+//   - VirusTotal YARA hunts
+//   - Security orchestration platforms
+//   - Custom malware analysis pipelines
+//   - Incident response automation
 package yara
 
 import (
