@@ -115,3 +115,26 @@ The codebase follows a clean, modular pipeline architecture:
 - File output: Edit `src/files/write_output.go`
 
 The modular design allows easy modification of individual components without affecting the overall architecture.
+
+## Features
+
+### ✅ Implemented
+- **Multi-algorithm hashing**: MD5, SHA1, SHA256, SHA512 with concurrent processing
+- **Flexible output formats**: Standard, Condensed, IOC-friendly for different use cases
+- **YARA rule generation**: Automatic rule creation for malware detection with hash and filename patterns
+- **KQL query generation**: Microsoft security platform integration (Microsoft 365 Defender, Azure Sentinel, Log Analytics)
+- **Comprehensive testing**: 91.7% code coverage with extensive unit and integration tests
+- **Cross-platform support**: Linux and Windows binaries with automated installers
+- **Security-focused architecture**: Designed for threat hunting and security analysis workflows
+- **Modular codebase**: Clean separation of concerns with well-documented APIs
+
+### 🔮 Roadmap
+Future enhancements planned:
+1. **Sigma rule generation**: Support for SIEM platform rule creation
+2. **JSON output format**: API-friendly structured output for integration
+3. **Recursive subdirectory exclusion**: Pattern-based directory filtering
+4. **Hash verification and integrity checking**: Validate file integrity over time
+5. **Performance optimizations**: Enhanced processing for large file sets
+6. **Custom hash algorithms**: Support for additional cryptographic functions
+7. **Database export**: Direct export to security databases and threat intel platforms
+8. **REST API mode**: HTTP API for integration with security orchestration platforms

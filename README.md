@@ -318,21 +318,101 @@ DeviceFileEvents
 | take 1000
 ```
 
-## Features
+## KQL Query Output Examples
 
-### ✅ Implemented
-- **Multi-algorithm hashing**: MD5, SHA1, SHA256, SHA512
-- **Flexible output formats**: Standard, Condensed, IOC-friendly
-- **YARA rule generation**: Automatic rule creation for malware detection
-- **KQL query generation**: Microsoft security platform integration
-- **Comprehensive testing**: 91.7% code coverage with extensive test suite
-- **Cross-platform support**: Linux and Windows binaries
+DirHash can generate KQL queries for Microsoft security platforms (Microsoft 365 Defender, Azure Sentinel, Log Analytics):
 
-### 🔮 Roadmap
-Future enhancements planned:
-1. Sigma rule generation for SIEM platforms
-2. JSON output format for API integration
-3. Recursive subdirectory exclusion patterns
-4. Hash verification and integrity checking
-5. Performance optimizations for large file sets
+### Standard KQL Query Generation
+```bash
+# Generate KQL query for threat hunting
+go run dirhash.go -i /suspicious/files -q threat_hunt.kql --kql-name malware_detection -a md5 sha256
+```
+
+**Generated KQL Query Output:**
+```kql
+// KQL Query: malware_detection
+// Description: KQL query to detect files based on hashes and filenames - Generated from 3 files
+// Author: DirHash
+// Generated: 2025-07-03 19:30:48 UTC
+// Tags: threat-hunting, file-detection, security, dirhash
+//
+// Hash Count: 6
+// Hash Types: md5, sha256
+// Filename Count: 3
+// Tables: DeviceFileEvents
+// Time Range: 7d
+// Max Results: 1000
+//
+// This query searches for files based on cryptographic hashes and filenames.
+// It can be used for threat hunting, incident response, and security analysis.
+// Modify the time range and result limits as needed for your environment.
+
+DeviceFileEvents
+| where TimeGenerated >= ago(7d)
+| where ((MD5 in ("d6eb32081c822ed572b70567826d9d9d", "abc123def456ghi789", "xyz789abc012def345")) or (SHA256 in ("a1fff0ffefb9eace7230c24e50731f0a91c62f9cefdfe77121c2f607125dffae", "def456abc123ghi789jkl012", "mno345pqr678stu901vwx234"))) or (FileName in~ ("malware.exe", "trojan.dll", "suspicious.bin"))
+| project TimeGenerated, DeviceName, FileName, FolderPath, MD5, SHA1, SHA256, ProcessCommandLine, InitiatingProcessFileName
+| extend SourceTable = "DeviceFileEvents"
+| sort by TimeGenerated desc
+| take 1000
+```
+
+### Hash-Only KQL Query
+```bash
+# Generate hash-only KQL query (no filenames)
+go run dirhash.go -i /iocs -q hash_detection.kql --kql-hash-only -a sha256 sha512
+```
+
+**Generated Hash-Only KQL Output:**
+```kql
+// KQL Query: dirhash_generated_query
+// Description: KQL query to detect files based on hashes and filenames - Generated from 2 files
+// Author: DirHash
+// Generated: 2025-07-03 19:35:12 UTC
+
+DeviceFileEvents
+| where TimeGenerated >= ago(7d)
+| where ((SHA256 in ("def456abc123ghi789jkl012mno345", "pqr678stu901vwx234yzabc012def456")) or (SHA512 in ("ghi789jkl012mno345pqr678stu901vwx234yzabc012def456", "789abc012def456ghi789jkl012mno345pqr678stu901vwx234")))
+| project TimeGenerated, DeviceName, FileName, FolderPath, MD5, SHA1, SHA256, ProcessCommandLine, InitiatingProcessFileName
+| extend SourceTable = "DeviceFileEvents"
+| sort by TimeGenerated desc
+| take 1000
+```
+
+### Multi-Table KQL Query
+```bash
+# Generate KQL query for multiple security log sources
+go run dirhash.go -i /threats -q comprehensive_hunt.kql --kql-tables DeviceFileEvents SecurityEvents CommonSecurityLog
+```
+
+**Generated Multi-Table KQL Output:**
+```kql
+// KQL Query: dirhash_generated_query
+// Description: KQL query to detect files based on hashes and filenames - Generated from 2 files
+// Author: DirHash
+// Generated: 2025-07-03 19:40:25 UTC
+
+union (
+DeviceFileEvents
+| where TimeGenerated >= ago(7d)
+| where ((MD5 in ("abc123def456")) or (SHA256 in ("def456abc123ghi789"))) or (FileName in~ ("threat.exe"))
+| project TimeGenerated, DeviceName, FileName, FolderPath, MD5, SHA1, SHA256, ProcessCommandLine, InitiatingProcessFileName
+| extend SourceTable = "DeviceFileEvents"
+),
+(
+SecurityEvents
+| where TimeGenerated >= ago(7d)
+| where ((FileHash in ("abc123def456", "def456abc123ghi789"))) or (FileName in~ ("threat.exe"))
+| project TimeGenerated, Computer, FileName, FilePath, FileHash, ProcessName, CommandLine
+| extend SourceTable = "SecurityEvents"
+),
+(
+CommonSecurityLog
+| where TimeGenerated >= ago(7d)
+| where ((FileHash in ("abc123def456", "def456abc123ghi789"))) or (FileName in~ ("threat.exe"))
+| project TimeGenerated, Computer, FileName, FilePath, FileHash, ProcessName, CommandLine
+| extend SourceTable = "CommonSecurityLog"
+)
+| sort by TimeGenerated desc
+| take 1000
+```
 
