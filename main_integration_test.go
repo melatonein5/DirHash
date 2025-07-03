@@ -8,6 +8,7 @@ import (
 
 	"github.com/melatonein5/DirHash/src/args"
 	"github.com/melatonein5/DirHash/src/files"
+	"github.com/melatonein5/DirHash/src/kql"
 	"github.com/melatonein5/DirHash/src/yara"
 )
 
@@ -518,5 +519,378 @@ func TestMainYaraErrorHandling(t *testing.T) {
 	_, err = yara.GenerateYaraRuleFromHashes([]*files.File{testFile}, "test", []string{"nonexistent"})
 	if err == nil {
 		t.Error("Should return error for invalid hash types")
+	}
+}
+
+// TestMainKQLIntegration tests KQL query generation functionality
+func TestMainKQLIntegration(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "dirhash_kql_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create test files
+	testFiles := map[string]string{
+		"malware.exe": "malicious content here",
+		"trojan.dll":  "another malicious file",
+		"spyware.bin": "spyware payload",
+	}
+
+	for filename, content := range testFiles {
+		filePath := filepath.Join(tmpDir, filename)
+		err = os.WriteFile(filePath, []byte(content), 0644)
+		if err != nil {
+			t.Fatalf("Failed to create test file %s: %v", filename, err)
+		}
+	}
+
+	// Test KQL generation with all hash types
+	testArgs := []string{
+		"-i", tmpDir,
+		"-a", "md5", "sha256", "sha512",
+		"-q", filepath.Join(tmpDir, "malware.kql"),
+		"--kql-name", "malware_detection",
+	}
+
+	parsedArgs, err := args.ParseArgs(testArgs)
+	if err != nil {
+		t.Fatalf("Failed to parse args: %v", err)
+	}
+
+	// Execute main workflow
+	enumFiles, err := files.EnumerateFiles(parsedArgs.StrInputDir)
+	if err != nil {
+		t.Fatalf("Error enumerating files: %v", err)
+	}
+
+	hashedFiles, err := files.HashFiles(enumFiles, parsedArgs.HashAlgorithmId)
+	if err != nil {
+		t.Fatalf("Error hashing files: %v", err)
+	}
+
+	// Test KQL query generation (mimicking main.go logic)
+	var query *kql.KQLQuery
+	queryName := parsedArgs.KQLName
+	if queryName == "" {
+		queryName = "dirhash_generated_query"
+	}
+
+	options := kql.DefaultKQLQueryOptions()
+	options.Tables = parsedArgs.KQLTables
+	options.IncludeHashes = true
+	options.IncludeFilenames = !parsedArgs.KQLHashOnly
+
+	if parsedArgs.KQLHashOnly {
+		query, err = kql.GenerateKQLQueryHashOnly(hashedFiles, queryName, parsedArgs.StrHashAlgorithms)
+	} else {
+		query, err = kql.GenerateKQLQueryWithOptions(hashedFiles, queryName, parsedArgs.StrHashAlgorithms, options)
+	}
+
+	if err != nil {
+		t.Fatalf("Failed to generate KQL query: %v", err)
+	}
+
+	// Write KQL query
+	kqlContent := query.ToKQLFormat()
+	err = os.WriteFile(parsedArgs.KQLFile, []byte(kqlContent), 0644)
+	if err != nil {
+		t.Fatalf("Failed to write KQL file: %v", err)
+	}
+
+	// Verify KQL query was created
+	if _, err := os.Stat(parsedArgs.KQLFile); os.IsNotExist(err) {
+		t.Error("KQL query file should have been created")
+	}
+
+	// Read and verify KQL content
+	kqlFileContent, err := os.ReadFile(parsedArgs.KQLFile)
+	if err != nil {
+		t.Fatalf("Failed to read KQL file: %v", err)
+	}
+
+	kqlString := string(kqlFileContent)
+
+	// Verify KQL query structure
+	expectedElements := []string{
+		"// KQL Query: malware_detection",
+		"// Author: DirHash",
+		"DeviceFileEvents",
+		"TimeGenerated",
+		"sort by TimeGenerated desc",
+		"take 1000",
+	}
+
+	for _, element := range expectedElements {
+		if !strings.Contains(kqlString, element) {
+			t.Errorf("KQL query should contain '%s'", element)
+		}
+	}
+
+	// Verify hash strings are present
+	if !strings.Contains(kqlString, "MD5") {
+		t.Error("KQL query should contain MD5 hash references")
+	}
+	if !strings.Contains(kqlString, "SHA256") {
+		t.Error("KQL query should contain SHA256 hash references")
+	}
+
+	// Verify filename strings are present
+	for filename := range testFiles {
+		if !strings.Contains(kqlString, filename) {
+			t.Errorf("KQL query should contain filename '%s'", filename)
+		}
+	}
+}
+
+// TestMainKQLHashOnlyMode tests KQL hash-only mode
+func TestMainKQLHashOnlyMode(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "dirhash_kql_hash_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create test file
+	testFile := filepath.Join(tmpDir, "suspicious.exe")
+	err = os.WriteFile(testFile, []byte("suspicious content"), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// Test KQL hash-only generation
+	testArgs := []string{
+		"-i", tmpDir,
+		"-a", "md5", "sha256",
+		"-q", filepath.Join(tmpDir, "hashes.kql"),
+		"--kql-name", "hash_detection",
+		"--kql-hash-only",
+	}
+
+	parsedArgs, err := args.ParseArgs(testArgs)
+	if err != nil {
+		t.Fatalf("Failed to parse args: %v", err)
+	}
+
+	// Execute workflow
+	enumFiles, err := files.EnumerateFiles(parsedArgs.StrInputDir)
+	if err != nil {
+		t.Fatalf("Error enumerating files: %v", err)
+	}
+
+	hashedFiles, err := files.HashFiles(enumFiles, parsedArgs.HashAlgorithmId)
+	if err != nil {
+		t.Fatalf("Error hashing files: %v", err)
+	}
+
+	// Generate hash-only KQL query
+	query, err := kql.GenerateKQLQueryHashOnly(hashedFiles, parsedArgs.KQLName, parsedArgs.StrHashAlgorithms)
+	if err != nil {
+		t.Fatalf("Failed to generate hash-only KQL query: %v", err)
+	}
+
+	// Write and verify
+	kqlContent := query.ToKQLFormat()
+	err = os.WriteFile(parsedArgs.KQLFile, []byte(kqlContent), 0644)
+	if err != nil {
+		t.Fatalf("Failed to write KQL file: %v", err)
+	}
+
+	// Read and verify content
+	kqlFileContent, err := os.ReadFile(parsedArgs.KQLFile)
+	if err != nil {
+		t.Fatalf("Failed to read KQL file: %v", err)
+	}
+
+	kqlString := string(kqlFileContent)
+
+	// Verify hash-only content
+	if !strings.Contains(kqlString, "// KQL Query: hash_detection") {
+		t.Error("KQL query should contain correct query name")
+	}
+
+	if !strings.Contains(kqlString, "MD5") {
+		t.Error("Hash-only query should contain MD5 hash references")
+	}
+	if !strings.Contains(kqlString, "SHA256") {
+		t.Error("Hash-only query should contain SHA256 hash references")
+	}
+
+	// Verify NO filename strings in hash-only mode
+	if strings.Contains(kqlString, "suspicious.exe") {
+		t.Error("Hash-only query should NOT contain filename strings")
+	}
+	if strings.Contains(kqlString, "FileName") && strings.Contains(kqlString, "suspicious.exe") {
+		t.Error("Hash-only query should NOT contain filename-based conditions")
+	}
+}
+
+// TestMainKQLMultipleTables tests KQL generation with multiple tables
+func TestMainKQLMultipleTables(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "dirhash_kql_tables_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create test file
+	testFile := filepath.Join(tmpDir, "security.exe")
+	err = os.WriteFile(testFile, []byte("security test content"), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	// Test KQL generation with multiple tables
+	testArgs := []string{
+		"-i", tmpDir,
+		"-a", "md5", "sha256",
+		"-q", filepath.Join(tmpDir, "security.kql"),
+		"--kql-name", "security_detection",
+		"--kql-tables", "DeviceFileEvents", "SecurityEvents", "CommonSecurityLog",
+	}
+
+	parsedArgs, err := args.ParseArgs(testArgs)
+	if err != nil {
+		t.Fatalf("Failed to parse args: %v", err)
+	}
+
+	// Verify KQL tables are parsed correctly
+	expectedTables := []string{"DeviceFileEvents", "SecurityEvents", "CommonSecurityLog"}
+	if len(parsedArgs.KQLTables) != len(expectedTables) {
+		t.Fatalf("Expected %d KQL tables, got %d", len(expectedTables), len(parsedArgs.KQLTables))
+	}
+
+	for i, expected := range expectedTables {
+		if parsedArgs.KQLTables[i] != expected {
+			t.Errorf("Expected KQL table '%s', got '%s'", expected, parsedArgs.KQLTables[i])
+		}
+	}
+
+	// Execute workflow
+	enumFiles, err := files.EnumerateFiles(parsedArgs.StrInputDir)
+	if err != nil {
+		t.Fatalf("Error enumerating files: %v", err)
+	}
+
+	hashedFiles, err := files.HashFiles(enumFiles, parsedArgs.HashAlgorithmId)
+	if err != nil {
+		t.Fatalf("Error hashing files: %v", err)
+	}
+
+	// Generate KQL query with multiple tables
+	options := kql.DefaultKQLQueryOptions()
+	options.Tables = parsedArgs.KQLTables
+
+	query, err := kql.GenerateKQLQueryWithOptions(hashedFiles, parsedArgs.KQLName, parsedArgs.StrHashAlgorithms, options)
+	if err != nil {
+		t.Fatalf("Failed to generate multi-table KQL query: %v", err)
+	}
+
+	// Write and verify
+	kqlContent := query.ToKQLFormat()
+	err = os.WriteFile(parsedArgs.KQLFile, []byte(kqlContent), 0644)
+	if err != nil {
+		t.Fatalf("Failed to write KQL file: %v", err)
+	}
+
+	// Read and verify content
+	kqlFileContent, err := os.ReadFile(parsedArgs.KQLFile)
+	if err != nil {
+		t.Fatalf("Failed to read KQL file: %v", err)
+	}
+
+	kqlString := string(kqlFileContent)
+
+	// Verify all tables are present
+	for _, table := range expectedTables {
+		if !strings.Contains(kqlString, table) {
+			t.Errorf("KQL query should contain table '%s'", table)
+		}
+	}
+
+	// Verify union is used for multiple tables
+	if !strings.Contains(kqlString, "union") {
+		t.Error("Multi-table KQL query should contain union statement")
+	}
+
+	// Verify table-specific field handling
+	if !strings.Contains(kqlString, "MD5") {
+		t.Error("DeviceFileEvents query should contain MD5 field")
+	}
+
+	if !strings.Contains(kqlString, "FileHash") {
+		t.Error("SecurityEvents/CommonSecurityLog query should contain FileHash field")
+	}
+}
+
+// TestMainKQLErrorHandling tests KQL error scenarios
+func TestMainKQLErrorHandling(t *testing.T) {
+	// Test empty files list
+	_, err := kql.GenerateKQLQuery([]*files.File{}, "test", []string{"md5"})
+	if err == nil {
+		t.Error("Should return error for empty files list")
+	}
+
+	// Test files without hashes
+	testFile := &files.File{
+		FileName: "test.exe",
+		Hashes:   map[string]string{},
+	}
+	query, err := kql.GenerateKQLQuery([]*files.File{testFile}, "test", []string{"md5"})
+	if err != nil {
+		t.Fatalf("Should not error for files without hashes: %v", err)
+	}
+
+	// Should still generate query with filename
+	if len(query.FilenameList) == 0 {
+		t.Error("Query should contain filename even without hashes")
+	}
+}
+
+// TestMainKQLArgumentParsing tests KQL-specific argument parsing
+func TestMainKQLArgumentParsing(t *testing.T) {
+	// Test basic KQL arguments
+	testArgs := []string{
+		"-i", "/test/dir",
+		"-q", "/output/query.kql",
+		"--kql-name", "test_query",
+	}
+
+	parsedArgs, err := args.ParseArgs(testArgs)
+	if err != nil {
+		t.Fatalf("Failed to parse KQL args: %v", err)
+	}
+
+	if !parsedArgs.KQLOutput {
+		t.Error("KQLOutput should be true when -q flag is provided")
+	}
+
+	if parsedArgs.KQLFile != "/output/query.kql" {
+		t.Errorf("Expected KQL file '/output/query.kql', got '%s'", parsedArgs.KQLFile)
+	}
+
+	if parsedArgs.KQLName != "test_query" {
+		t.Errorf("Expected KQL name 'test_query', got '%s'", parsedArgs.KQLName)
+	}
+
+	// Test KQL hash-only flag
+	testArgs = []string{
+		"-i", "/test/dir",
+		"-q", "/output/query.kql",
+		"--kql-hash-only",
+	}
+
+	parsedArgs, err = args.ParseArgs(testArgs)
+	if err != nil {
+		t.Fatalf("Failed to parse KQL hash-only args: %v", err)
+	}
+
+	if !parsedArgs.KQLHashOnly {
+		t.Error("KQLHashOnly should be true when --kql-hash-only flag is provided")
+	}
+
+	// Test default KQL tables
+	if len(parsedArgs.KQLTables) != 1 || parsedArgs.KQLTables[0] != "DeviceFileEvents" {
+		t.Errorf("Default KQL tables should be [DeviceFileEvents], got %v", parsedArgs.KQLTables)
 	}
 }

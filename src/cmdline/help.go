@@ -65,6 +65,12 @@ YARA Rule Generation Options:
   --yara-rule-name <name>  Specify custom name for generated YARA rule
   --yara-hash-only         Generate hash-only rules without filenames
 
+KQL Query Generation Options:
+  -q, --kql <file>         Generate KQL query and save to specified file
+  --kql-name <name>        Specify custom name for generated KQL query
+  --kql-hash-only          Generate hash-only queries without filenames
+  --kql-tables <tables>    Specify target tables (default: DeviceFileEvents), can take more than 1 argument
+
 General Options:
   -h, --help               Show this help message and exit
 
@@ -76,6 +82,11 @@ Supported output formats:
   condensed - All hashes on single row per file  
   ioc       - IOC-friendly format for security tools (YARA, KQL, Sentinel)
 
+Supported KQL tables:
+  DeviceFileEvents    - Microsoft 365 Defender file events (default)
+  SecurityEvents      - Windows security events
+  CommonSecurityLog   - Common security log format
+
 Examples:
   Basic file hashing:
     dirhash -i /path/to/dir -o output.csv -a sha256
@@ -86,6 +97,16 @@ Examples:
     dirhash -i /malware/samples -y detection.yar --yara-rule-name malware_detection
     dirhash -i /files -a sha256 sha512 -y hashes.yar --yara-hash-only
     dirhash -i /suspicious -o results.csv -y rules.yar --yara-rule-name threat_hunt
+
+  KQL query generation:
+    dirhash -i /malware/samples -q detection.kql --kql-name malware_hunt
+    dirhash -i /files -a sha256 sha512 -q hashes.kql --kql-hash-only
+    dirhash -i /suspicious -q security.kql --kql-tables DeviceFileEvents SecurityEvents
+    dirhash -i /threats -o iocs.csv -q hunt.kql --kql-name threat_detection
+
+  Combined YARA and KQL generation:
+    dirhash -i /malware -o results.csv -y rules.yar -q queries.kql -a sha256 sha512
+    dirhash -i /samples -y detection.yar -q hunting.kql --yara-rule-name malware --kql-name threats
 
   Terminal output:
     dirhash -t

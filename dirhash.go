@@ -68,6 +68,7 @@ import (
 	"github.com/melatonein5/DirHash/src/args"
 	"github.com/melatonein5/DirHash/src/cmdline"
 	"github.com/melatonein5/DirHash/src/files"
+	"github.com/melatonein5/DirHash/src/kql"
 	"github.com/melatonein5/DirHash/src/yara"
 )
 
@@ -177,6 +178,14 @@ func main() {
 			log.Fatalf("Error generating YARA rule: %v", err)
 		}
 	}
+
+	// Generate KQL query if requested
+	if arguments.KQLOutput {
+		err := generateKQLQuery(hashedFiles)
+		if err != nil {
+			log.Fatalf("Error generating KQL query: %v", err)
+		}
+	}
 }
 
 // generateYaraRule creates and writes a YARA rule based on the processed files.
@@ -242,5 +251,84 @@ func generateYaraRule(hashedFiles []*files.File) error {
 	}
 
 	log.Printf("YARA rule written to: %s (rule name: %s)", arguments.YaraFile, rule.Name)
+	return nil
+}
+
+// generateKQLQuery creates and writes a KQL query based on the processed files.
+//
+// This function generates KQL (Kusto Query Language) queries for threat hunting
+// and security analysis in Microsoft Sentinel, Azure Log Analytics, and other
+// KQL-enabled security platforms.
+//
+// Parameters:
+//   - hashedFiles: Slice of File structs containing hash data and metadata
+//
+// Returns:
+//   - error: Any error that occurred during query generation or file writing
+//
+// The function supports two KQL query generation modes:
+//
+//  1. Standard Mode (default): Generates queries with both hash-based and filename-based
+//     search conditions, providing comprehensive detection coverage across multiple
+//     security log sources.
+//
+//  2. Hash-Only Mode: Generates queries containing only cryptographic hash searches,
+//     useful for scenarios where filename-based detection might produce false positives
+//     or when analyzing files that frequently change names.
+//
+// The generated KQL query includes:
+//   - Metadata comments with author, description, generation date, and tags
+//   - Multi-table search capabilities (DeviceFileEvents, SecurityEvents, etc.)
+//   - Proper KQL syntax with efficient operators (in, contains, has)
+//   - Time range filtering and result limiting for performance optimization
+//   - Field selection optimized for security analysis workflows
+//
+// Query names are automatically sanitized to ensure KQL compliance by replacing
+// invalid characters with underscores and ensuring proper identifier structure.
+// If no query name is specified, a default name "dirhash_generated_query" is used.
+//
+// The function supports customizable target tables through the KQLTables argument,
+// allowing users to specify which log sources to search (e.g., DeviceFileEvents,
+// SecurityEvents, CommonSecurityLog).
+//
+// The function writes the generated query to the file path specified in the
+// global arguments.KQLFile and logs the operation result.
+func generateKQLQuery(hashedFiles []*files.File) error {
+	var query *kql.KQLQuery
+	var err error
+
+	// Determine query name
+	queryName := arguments.KQLName
+	if queryName == "" {
+		queryName = "dirhash_generated_query"
+	}
+
+	// Prepare KQL options
+	options := kql.DefaultKQLQueryOptions()
+	options.Tables = arguments.KQLTables
+	options.IncludeHashes = true
+	options.IncludeFilenames = !arguments.KQLHashOnly
+
+	// Generate query based on mode
+	if arguments.KQLHashOnly {
+		// Hash-only mode: only include hash-based conditions
+		query, err = kql.GenerateKQLQueryHashOnly(hashedFiles, queryName, arguments.StrHashAlgorithms)
+	} else {
+		// Standard mode: include both hashes and filenames
+		query, err = kql.GenerateKQLQueryWithOptions(hashedFiles, queryName, arguments.StrHashAlgorithms, options)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	// Write KQL query to file
+	kqlContent := query.ToKQLFormat()
+	err = os.WriteFile(arguments.KQLFile, []byte(kqlContent), 0644)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("KQL query written to: %s (query name: %s)", arguments.KQLFile, query.Name)
 	return nil
 }

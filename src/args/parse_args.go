@@ -21,6 +21,11 @@ func ParseArgs(rawArgs []string) (Args, error) {
 	args.YaraFile = ""
 	args.YaraRuleName = ""
 	args.YaraHashOnly = false
+	args.KQLOutput = false
+	args.KQLFile = ""
+	args.KQLName = ""
+	args.KQLHashOnly = false
+	args.KQLTables = []string{}
 	args.Help = false
 
 	//Get the length of the raw arguments for later use
@@ -107,6 +112,40 @@ func ParseArgs(rawArgs []string) (Args, error) {
 				args.YaraHashOnly = true
 				// Move to the next argument
 				i++
+			case "-q", "--kql":
+				//KQL output file
+				nextArg := i + 1
+				if nextArg >= rawArgsLen {
+					return args, errors.New("missing value for -q | --kql flag")
+				}
+				args.KQLFile = rawArgs[nextArg]
+				args.KQLOutput = true
+				// Skip the next argument since it's the value for the flag
+				i += 2
+			case "--kql-name":
+				//KQL query name
+				nextArg := i + 1
+				if nextArg >= rawArgsLen {
+					return args, errors.New("missing value for --kql-name flag")
+				}
+				args.KQLName = rawArgs[nextArg]
+				// Skip the next argument since it's the value for the flag
+				i += 2
+			case "--kql-hash-only":
+				//KQL hash-only mode
+				args.KQLHashOnly = true
+				// Move to the next argument
+				i++
+			case "--kql-tables":
+				//KQL tables to target
+				//There can be multiple tables specified, so we need to loop until we hit a flag or run out of arguments
+				for j := i + 1; j < rawArgsLen && rawArgs[j][0] != '-'; j++ {
+					args.KQLTables = append(args.KQLTables, rawArgs[j])
+					// Move to the next argument
+					i = j
+				}
+				// Move to the next argument
+				i++
 			case "-h", "--help":
 				//Help flag
 				args.Help = true
@@ -130,6 +169,11 @@ func ParseArgs(rawArgs []string) (Args, error) {
 	if len(args.StrHashAlgorithms) == 0 {
 		args.StrHashAlgorithms = []string{"md5"}
 		args.HashAlgorithmId = []int{0} // MD5
+	}
+
+	//If no KQL tables were specified, default to DeviceFileEvents
+	if len(args.KQLTables) == 0 {
+		args.KQLTables = []string{"DeviceFileEvents"}
 	}
 
 	return args, nil
