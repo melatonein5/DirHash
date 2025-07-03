@@ -4,7 +4,7 @@
 ![Coverage](https://img.shields.io/badge/Coverage-91.7%25-brightgreen)
 [![Go Report Card](https://goreportcard.com/badge/github.com/melatonein5/DirHash)](https://goreportcard.com/report/github.com/melatonein5/DirHash)
 
-DirHash is a command line tool to take a directory and return the file hashes.
+DirHash is a command line tool that generates cryptographic file hashes and exports detection rules for security analysis. It supports multiple hash algorithms, flexible output formats, and can generate both YARA rules and KQL queries for threat hunting and malware detection.
 
 ## Installation
 At the time of writing, an installer is only available for amd64 Linux. Download the installer from the [releases page](https://github.com/melatonein5/DirHash/releases/tag/latest), and run `sudo ./dirhash_amd64_linux_installer'`.
@@ -25,25 +25,68 @@ The following is generic usage using a Linux binary in the current directory:
 
 ```
 Usage: ./dirhash [options]
-Options:
+
+File Processing Options:
   -i, --input-dir <dir>    Specify the input directory (default: current directory)
   -o, --output <file>      Specify the output file (default: no output file)
   -a, --algorithm <alg>    Specify the hash algorithms (default: md5), can take more than 1 argument, separated by spaces
-  -f, --format <format>    Specify the output format (default: standard)
+  -f, --format <format>    Specify the output format for both terminal and file output (default: standard)
   -t, --terminal           Output to terminal (default: false)
+
+YARA Rule Generation Options:
+  -y, --yara <file>        Generate YARA rule and save to specified file
+  --yara-rule-name <name>  Specify custom name for generated YARA rule
+  --yara-hash-only         Generate hash-only rules without filenames
+
+KQL Query Generation Options:
+  -q, --kql <file>         Generate KQL query and save to specified file
+  --kql-name <name>        Specify custom name for generated KQL query
+  --kql-hash-only          Generate hash-only queries without filenames
+  --kql-tables <tables>    Specify target tables (default: DeviceFileEvents), can take more than 1 argument
+
+General Options:
   -h, --help               Show this help message and exit
+
 Supported algorithms:
   md5, sha1, sha256, sha512
+
 Supported output formats:
   standard  - Traditional format with separate rows per hash type
   condensed - All hashes on single row per file  
   ioc       - IOC-friendly format for security tools (YARA, KQL, Sentinel)
+
+Supported KQL tables:
+  DeviceFileEvents    - Microsoft 365 Defender file events (default)
+  SecurityEvents      - Windows security events
+  CommonSecurityLog   - Common security log format
+
 Examples:
-  ./dirhash -i /path/to/dir -o output.csv -a sha256
-  ./dirhash --input-dir /path/to/dir --output output.csv --algorithm sha512 sha1 --format condensed
-  ./dirhash -i /suspicious/files -o iocs.csv -a md5 sha1 sha256 sha512 -f ioc
-  ./dirhash -t
-  ./dirhash --help
+  Basic file hashing:
+    ./dirhash -i /path/to/dir -o output.csv -a sha256
+    ./dirhash --input-dir /path/to/dir --output output.csv --algorithm sha512 sha1 --format condensed
+    ./dirhash -i /suspicious/files -o iocs.csv -a md5 sha1 sha256 sha512 -f ioc
+
+  YARA rule generation:
+    ./dirhash -i /malware/samples -y detection.yar --yara-rule-name malware_detection
+    ./dirhash -i /files -a sha256 sha512 -y hashes.yar --yara-hash-only
+    ./dirhash -i /suspicious -o results.csv -y rules.yar --yara-rule-name threat_hunt
+
+  KQL query generation:
+    ./dirhash -i /malware/samples -q detection.kql --kql-name malware_hunt
+    ./dirhash -i /files -a sha256 sha512 -q hashes.kql --kql-hash-only
+    ./dirhash -i /suspicious -q security.kql --kql-tables DeviceFileEvents SecurityEvents
+    ./dirhash -i /threats -o iocs.csv -q hunt.kql --kql-name threat_detection
+
+  Combined YARA and KQL generation:
+    ./dirhash -i /malware -o results.csv -y rules.yar -q queries.kql -a sha256 sha512
+    ./dirhash -i /samples -y detection.yar -q hunting.kql --yara-rule-name malware --kql-name threats
+
+  Terminal output:
+    ./dirhash -t
+    ./dirhash -i /files -t -a sha256
+
+  Help:
+    ./dirhash --help
 ```
 
 ## Usage
@@ -57,25 +100,65 @@ cd DirHash
 If a binary for your system is not available, you can run DirHash through the Go runtime environment with `go run dirhash.go`.
 ```
 Usage: go run dirhash.go [options]
-Options:
+
+File Processing Options:
   -i, --input-dir <dir>    Specify the input directory (default: current directory)
   -o, --output <file>      Specify the output file (default: no output file)
   -a, --algorithm <alg>    Specify the hash algorithms (default: md5), can take more than 1 argument, separated by spaces
-  -f, --format <format>    Specify the output format (default: standard)
+  -f, --format <format>    Specify the output format for both terminal and file output (default: standard)
   -t, --terminal           Output to terminal (default: false)
+
+YARA Rule Generation Options:
+  -y, --yara <file>        Generate YARA rule and save to specified file
+  --yara-rule-name <name>  Specify custom name for generated YARA rule
+  --yara-hash-only         Generate hash-only rules without filenames
+
+KQL Query Generation Options:
+  -q, --kql <file>         Generate KQL query and save to specified file
+  --kql-name <name>        Specify custom name for generated KQL query
+  --kql-hash-only          Generate hash-only queries without filenames
+  --kql-tables <tables>    Specify target tables (default: DeviceFileEvents), can take more than 1 argument
+
+General Options:
   -h, --help               Show this help message and exit
+
 Supported algorithms:
   md5, sha1, sha256, sha512
+
 Supported output formats:
   standard  - Traditional format with separate rows per hash type
   condensed - All hashes on single row per file  
   ioc       - IOC-friendly format for security tools (YARA, KQL, Sentinel)
+
+Supported KQL tables:
+  DeviceFileEvents    - Microsoft 365 Defender file events (default)
+  SecurityEvents      - Windows security events
+  CommonSecurityLog   - Common security log format
+
 Examples:
-  go run dirhash.go -i /path/to/dir -o output.csv -a sha256
-  go run dirhash.go --input-dir /path/to/dir --output output.csv --algorithm sha512 sha1 --format condensed
-  go run dirhash.go -i /suspicious/files -o iocs.csv -a md5 sha1 sha256 sha512 -f ioc
-  go run dirhash.go -t
-  go run dirhash.go --help
+  Basic file hashing:
+    go run dirhash.go -i /path/to/dir -o output.csv -a sha256
+    go run dirhash.go --input-dir /path/to/dir --output output.csv --algorithm sha512 sha1 --format condensed
+    go run dirhash.go -i /suspicious/files -o iocs.csv -a md5 sha1 sha256 sha512 -f ioc
+
+  YARA rule generation:
+    go run dirhash.go -i /malware/samples -y detection.yar --yara-rule-name malware_detection
+    go run dirhash.go -i /files -a sha256 sha512 -y hashes.yar --yara-hash-only
+    go run dirhash.go -i /suspicious -o results.csv -y rules.yar --yara-rule-name threat_hunt
+
+  KQL query generation:
+    go run dirhash.go -i /malware/samples -q detection.kql --kql-name malware_hunt
+    go run dirhash.go -i /files -a sha256 sha512 -q hashes.kql --kql-hash-only
+    go run dirhash.go -i /suspicious -q security.kql --kql-tables DeviceFileEvents SecurityEvents
+    go run dirhash.go -i /threats -o iocs.csv -q hunt.kql --kql-name threat_detection
+
+  Combined YARA and KQL generation:
+    go run dirhash.go -i /malware -o results.csv -y rules.yar -q queries.kql -a sha256 sha512
+    go run dirhash.go -i /samples -y detection.yar -q hunting.kql --yara-rule-name malware --kql-name threats
+
+  Terminal output:
+    go run dirhash.go -t
+    go run dirhash.go --help
 ```
 
 #### Build from Source (requires Go installation)
@@ -148,36 +231,108 @@ src/files/hash_files.go,hash_files.go,3762,507e44f05e69d0057101e7d0b14cb9d8,359a
 ## Security & Threat Intelligence Use Cases
 
 ### YARA Rule Generation
-IOC format provides all necessary data for YARA rule creation:
+DirHash can automatically generate YARA rules for malware detection:
 ```bash
-# Generate IOC data for suspicious files (file output)
-go run dirhash.go -i /suspicious/samples -o malware_hashes.csv -a md5 sha1 sha256 sha512 -f ioc
+# Generate YARA rule from suspicious files
+go run dirhash.go -i /malware/samples -y malware_detection.yar --yara-rule-name APT_Malware_Family
 
-# Quick terminal review of IOC data
-go run dirhash.go -i /suspicious/samples -t -a md5 sha1 sha256 sha512 -f ioc
+# Generate hash-only YARA rules (no filenames)
+go run dirhash.go -i /suspicious/files -y hashes.yar --yara-hash-only -a sha256 sha512
+
+# Combined hash analysis and YARA rule generation
+go run dirhash.go -i /threat/samples -o analysis.csv -y detection.yar -f ioc -a md5 sha1 sha256
+```
+
+### KQL Query Generation for Microsoft Security
+Generate KQL queries for threat hunting in Microsoft 365 Defender, Azure Sentinel, and Log Analytics:
+```bash
+# Generate KQL query for Microsoft 365 Defender
+go run dirhash.go -i /malware/samples -q threat_hunt.kql --kql-name Advanced_Threat_Detection
+
+# Multi-table KQL queries for comprehensive hunting
+go run dirhash.go -i /suspicious/files -q security_hunt.kql --kql-tables DeviceFileEvents SecurityEvents
+
+# Hash-only KQL queries for broader detection
+go run dirhash.go -i /iocs -q hash_detection.kql --kql-hash-only -a sha256 sha512
+
+# Combined analysis with both YARA and KQL generation
+go run dirhash.go -i /threat/samples -o iocs.csv -y rules.yar -q queries.kql --kql-name ThreatHunt -f ioc
 ```
 
 ### Microsoft Sentinel Integration
-IOC format is optimized for Microsoft Sentinel IOC imports and KQL queries:
+IOC format is optimized for Microsoft Sentinel IOC imports and works seamlessly with generated KQL queries:
 ```bash
-# Create IOC feed for Sentinel (file output)
-go run dirhash.go -i /threat/samples -o sentinel_iocs.csv -f ioc -a md5 sha1 sha256
+# Create complete Sentinel threat hunting package
+go run dirhash.go -i /threat/samples -o sentinel_iocs.csv -q sentinel_hunt.kql -f ioc -a md5 sha1 sha256
 
-# Preview IOC data in terminal
-go run dirhash.go -i /threat/samples -t -f ioc -a md5 sha1 sha256
+# Generate IOC feed and KQL queries for Sentinel
+go run dirhash.go -i /malware/collection -o iocs.csv -q hunting.kql --kql-tables DeviceFileEvents CommonSecurityLog
 ```
 
-### Threat Hunting
-Condensed format provides efficient bulk hash analysis for threat hunting workflows:
+### Threat Hunting Workflows
+DirHash supports complete threat hunting workflows from hash generation to detection rule creation:
 ```bash
-# Analyze large file sets efficiently (file output)
-go run dirhash.go -i /system/files -o analysis.csv -f condensed -a sha256 md5
+# Complete threat hunting workflow
+go run dirhash.go -i /suspicious/files -o analysis.csv -y detection.yar -q hunt.kql -f ioc -a sha256 md5
 
-# Quick condensed terminal view for analysis
-go run dirhash.go -i /system/files -t -f condensed -a sha256 md5
+# Bulk analysis with condensed output for large datasets
+go run dirhash.go -i /system/files -o bulk_analysis.csv -f condensed -a sha256
+
+# Multi-platform detection rule generation
+go run dirhash.go -i /malware/samples -y yara_rules.yar -q kql_queries.kql --yara-rule-name MalwareFamily --kql-name ThreatDetection
 ```
 
-## Roadmap
+### Detection Rule Examples
+
+**Generated YARA Rule Example:**
+```yara
+rule malware_detection {
+    meta:
+        author = "DirHash"
+        description = "Auto-generated rule for malware detection"
+        date = "2025-07-03"
+        
+    strings:
+        $hash_md5_0 = "d6eb32081c822ed572b70567826d9d9d"
+        $hash_sha256_0 = "a1fff0ffefb9eace7230c24e50731f0a91c62f9cefdfe77121c2f607125dffae"
+        $filename_0 = "malware.exe"
+        
+    condition:
+        any of ($hash_*) or any of ($filename_*)
+}
+```
+
+**Generated KQL Query Example:**
+```kql
+// KQL Query: threat_detection
+// Description: KQL query to detect files based on hashes and filenames
+// Author: DirHash
+// Generated: 2025-07-03 19:30:48 UTC
+
+DeviceFileEvents
+| where TimeGenerated >= ago(7d)
+| where ((MD5 in ("d6eb32081c822ed572b70567826d9d9d")) or (SHA256 in ("a1fff0ffefb9eace7230c24e50731f0a91c62f9cefdfe77121c2f607125dffae"))) or (FileName in~ ("malware.exe"))
+| project TimeGenerated, DeviceName, FileName, FolderPath, MD5, SHA1, SHA256, ProcessCommandLine, InitiatingProcessFileName
+| extend SourceTable = "DeviceFileEvents"
+| sort by TimeGenerated desc
+| take 1000
+```
+
+## Features
+
+### ✅ Implemented
+- **Multi-algorithm hashing**: MD5, SHA1, SHA256, SHA512
+- **Flexible output formats**: Standard, Condensed, IOC-friendly
+- **YARA rule generation**: Automatic rule creation for malware detection
+- **KQL query generation**: Microsoft security platform integration
+- **Comprehensive testing**: 91.7% code coverage with extensive test suite
+- **Cross-platform support**: Linux and Windows binaries
+
+### 🔮 Roadmap
 Future enhancements planned:
-1. KQL query template generation
+1. Sigma rule generation for SIEM platforms
+2. JSON output format for API integration
+3. Recursive subdirectory exclusion patterns
+4. Hash verification and integrity checking
+5. Performance optimizations for large file sets
 
