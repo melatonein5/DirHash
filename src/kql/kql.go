@@ -93,10 +93,10 @@ type KQLQueryOptions struct {
 	TimeRange string   // Time range for query (default: "7d")
 
 	// Query behavior options
-	MaxResults      int  // Maximum results to return (default: 1000)
-	IncludeHashes   bool // Include hash-based searches (default: true)
+	MaxResults       int  // Maximum results to return (default: 1000)
+	IncludeHashes    bool // Include hash-based searches (default: true)
 	IncludeFilenames bool // Include filename-based searches (default: true)
-	CaseSensitive   bool // Case sensitive filename matching (default: false)
+	CaseSensitive    bool // Case sensitive filename matching (default: false)
 
 	// Output formatting options
 	IncludeMetadata bool // Include metadata comments (default: true)
@@ -216,15 +216,15 @@ func GenerateKQLQueryWithOptions(files []*files.File, queryName string, hashType
 
 	// Create query structure
 	query := &KQLQuery{
-		Name:        queryName,
-		Description: fmt.Sprintf("KQL query to detect files based on hashes and filenames - Generated from %d files", len(files)),
-		Author:      "DirHash",
-		Generated:   time.Now(),
-		Tags:        []string{"threat-hunting", "file-detection", "security", "dirhash"},
-		Tables:      options.Tables,
-		HashTypes:   getHashTypesFromMap(hashMap),
-		TimeRange:   options.TimeRange,
-		MaxResults:  options.MaxResults,
+		Name:         queryName,
+		Description:  fmt.Sprintf("KQL query to detect files based on hashes and filenames - Generated from %d files", len(files)),
+		Author:       "DirHash",
+		Generated:    time.Now(),
+		Tags:         []string{"threat-hunting", "file-detection", "security", "dirhash"},
+		Tables:       options.Tables,
+		HashTypes:    getHashTypesFromMap(hashMap),
+		TimeRange:    options.TimeRange,
+		MaxResults:   options.MaxResults,
 		FilenameList: filenames,
 	}
 

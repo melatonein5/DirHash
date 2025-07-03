@@ -79,10 +79,10 @@ type Args struct {
 	YaraHashOnly bool   // Generate hash-only rules without filenames (default: false)
 
 	// KQL Query Generation Configuration
-	KQLOutput   bool   // Whether to generate KQL queries (default: false)
-	KQLFile     string // Path to output KQL query file (required when KQLOutput=true)
-	KQLName     string // Custom name for generated KQL query (default: auto-generated)
-	KQLHashOnly bool   // Generate hash-only queries without filenames (default: false)
+	KQLOutput   bool     // Whether to generate KQL queries (default: false)
+	KQLFile     string   // Path to output KQL query file (required when KQLOutput=true)
+	KQLName     string   // Custom name for generated KQL query (default: auto-generated)
+	KQLHashOnly bool     // Generate hash-only queries without filenames (default: false)
 	KQLTables   []string // KQL tables to target (default: ["DeviceFileEvents"])
 
 	// Application Control Flags

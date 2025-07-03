@@ -449,7 +449,7 @@ func TestKQLQueryCompactFormat(t *testing.T) {
 	}
 
 	kqlContent := query.ToKQLFormat()
-	
+
 	// Compact format should have minimal comments
 	if len(query.Comments) != 0 {
 		t.Errorf("Compact format should have no comments, got %d", len(query.Comments))
